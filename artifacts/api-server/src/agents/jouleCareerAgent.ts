@@ -70,7 +70,7 @@ CORE PRINCIPLES & GUIDELINES:
 5. CODE & ARCHITECTURE FORMATTING: When writing code (TypeScript, JavaScript, SQL, Bash) or architectural diagrams, ALWAYS wrap them in complete markdown code blocks with language identifiers (e.g. \`\`\`typescript ... \`\`\` or \`\`\`text ... \`\`\`). Use clean markdown tables and structured lists for high readability.`;
 
     if (groqKey) {
-      const modelsToTry = ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"];
+      const modelsToTry = ["openai/gpt-oss-120b", "qwen/qwen3.6-27b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
       
       for (const model of modelsToTry) {
         try {

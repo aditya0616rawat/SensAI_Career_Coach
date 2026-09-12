@@ -42,7 +42,6 @@ packages:
 
 onlyBuiltDependencies:
   - '@clerk/shared'
-  - '@sap/hana-client'
   - esbuild
   - '@swc/core'
   - msw
@@ -83,5 +82,4 @@ overrides:
 
 allowBuilds:
   '@clerk/shared': true
-  '@sap/hana-client': true
   esbuild: true
