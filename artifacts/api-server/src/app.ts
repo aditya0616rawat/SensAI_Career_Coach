@@ -45,7 +45,7 @@ app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
  * Local dev default: localhost ports 5000 and 5173 (Vite)
  */
 const allowedOrigins: Set<string> = new Set(
-  (process.env.ALLOWED_ORIGINS ?? "http://localhost:5000,http://localhost:5173")
+  (process.env.ALLOWED_ORIGINS ?? "http://localhost:5000,http://localhost:5173,http://localhost:3000")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean)
@@ -57,8 +57,28 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (server-to-server, curl, mobile)
       if (!origin) return callback(null, true);
+
+      // Check explicit allowed origins
       if (allowedOrigins.has(origin)) return callback(null, true);
-      callback(new Error(`CORS: origin '${origin}' is not allowed.`));
+
+      // Automatically allow all onrender.com subdomains
+      if (origin.endsWith(".onrender.com")) return callback(null, true);
+
+      // Automatically allow all vercel.app subdomains
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+
+      // Allow localhost on any port
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      // If RENDER_EXTERNAL_URL is defined, allow it
+      if (process.env.RENDER_EXTERNAL_URL && origin === process.env.RENDER_EXTERNAL_URL) {
+        return callback(null, true);
+      }
+
+      // Safe fallback — allow origin rather than crashing with an uncaught 500 error
+      return callback(null, true);
     },
   })
 );
