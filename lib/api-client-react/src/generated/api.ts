@@ -62,7 +62,7 @@ export const getHealthCheckQueryOptions = <
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({
     signal,
-  }) => healthCheck({ signal, ...requestOptions });
+  }: { signal?: AbortSignal }) => healthCheck({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof healthCheck>>,
