@@ -3,7 +3,7 @@ import { skillsDiscoveryAgent } from "../agents/skillsDiscoveryAgent";
 import { inclusiveMatchingAgent } from "../agents/inclusiveMatchingAgent";
 import { biasAuditAgent } from "../agents/biasAuditAgent";
 import { careerCoachAgent } from "../agents/jouleCareerAgent";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 import { sendInternalError } from "../lib/http";
 import { rateLimit } from "../middlewares/rateLimit";
 import { requireAuth, requireRecruiter } from "../middlewares/requireAuth";
@@ -46,7 +46,7 @@ agentsRouter.post("/match", async (req, res) => {
 
     let result;
     if (clientProfile && typeof clientProfile === "object") {
-      const job = await hanaDb.getJob(jobId);
+      const job = await db.getJob(jobId);
       if (!job) return res.status(404).json({ success: false, error: "Job requisition not found." });
       result = await inclusiveMatchingAgent.calculateMatchForProfile(clientProfile, job, apiKey);
     } else {
@@ -91,7 +91,7 @@ agentsRouter.post("/chat", async (req, res) => {
     let dbProfile: any = null;
     if (authenticatedUserId) {
       try {
-        dbProfile = await hanaDb.getCandidateProfile(authenticatedUserId);
+        dbProfile = await db.getCandidateProfile(authenticatedUserId);
       } catch (err) {
         console.warn("Could not query DB for candidate profile:", err);
       }

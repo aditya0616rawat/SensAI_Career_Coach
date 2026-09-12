@@ -1,5 +1,5 @@
 import { BiasAuditResponse } from "./types";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 
 export class BiasAuditAgent {
   /**
@@ -7,7 +7,7 @@ export class BiasAuditAgent {
    * Validates ranking fairness and ensures objective, skill-first candidate evaluation.
    */
   async runAudit(): Promise<BiasAuditResponse> {
-    const candidates = await hanaDb.getCandidates();
+    const candidates = await db.getCandidates();
     if (candidates.length === 0) {
       return {
         totalCandidatesEvaluated: 0,

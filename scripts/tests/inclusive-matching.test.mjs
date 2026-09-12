@@ -23,11 +23,11 @@ test("InclusiveMatchingAgent enforces 0% penalty for career breaks (Inclusive Wo
   assert.match(source, /0% penalty for/);
 });
 
-test("InclusiveMatchingAgent maps gaps to curated SAP Learning Hub modules", () => {
+test("InclusiveMatchingAgent maps gaps to curated learning modules", () => {
   const source = read("artifacts/api-server/src/agents/inclusiveMatchingAgent.ts");
-  assert.match(source, /SAP_LEARNING_CATALOG/);
-  assert.match(source, /https:\/\/learning\.sap\.com/);
-  assert.match(source, /sapLearningHubModules/);
+  assert.match(source, /LEARNING_CATALOG/);
+  assert.match(source, /https:\/\/www\.coursera\.org/);
+  assert.match(source, /learningModules/);
 });
 
 test("InclusiveMatchingAgent supports semantic synonym resolution in heuristic mode", () => {
@@ -60,6 +60,6 @@ test("Candidate match endpoint caches stored match to prevent recalculation on r
 test("Candidate profile section provides dedicated POST /match/recalculate endpoint", () => {
   const candidate = read("artifacts/api-server/src/routes/candidate.ts");
   assert.match(candidate, /candidateRouter\.post\("\/match\/recalculate",/);
-  assert.match(candidate, /hanaDb\.saveCandidateProfile/);
+  assert.match(candidate, /db\.saveCandidateProfile/);
 });
 

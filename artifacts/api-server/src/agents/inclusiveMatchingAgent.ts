@@ -1,5 +1,5 @@
 import { JobMatchResponse } from "./types";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 
 /**
  * Parses and cleans LLM JSON responses.
@@ -297,8 +297,8 @@ export class InclusiveMatchingAgent {
     apiKey?: string
   ): Promise<JobMatchResponse> {
     const [candidate, job] = await Promise.all([
-      hanaDb.getCandidateProfile(candidateId),
-      hanaDb.getJob(jobId),
+      db.getCandidateProfile(candidateId),
+      db.getJob(jobId),
     ]);
 
     if (!candidate) {
@@ -489,8 +489,8 @@ Return a valid JSON object ONLY. Adhere strictly to this schema:
     apiKey?: string
   ): Promise<JobMatchResponse[]> {
     const [candidate, allJobs] = await Promise.all([
-      hanaDb.getCandidateProfile(candidateId),
-      hanaDb.getJobs(),
+      db.getCandidateProfile(candidateId),
+      db.getJobs(),
     ]);
 
     if (!candidate) {

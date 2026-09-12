@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 import { sendInternalError } from "../lib/http";
 import { requireRecruiter } from "../middlewares/requireAuth";
 
@@ -9,7 +9,7 @@ recruiterRouter.use(requireRecruiter);
 
 recruiterRouter.get("/jobs", async (_req, res) => {
   try {
-    return res.json({ success: true, jobs: await hanaDb.getJobs() });
+    return res.json({ success: true, jobs: await db.getJobs() });
   } catch (error) {
     return sendInternalError(res, error, "Recruiter job lookup failed");
   }
@@ -22,7 +22,7 @@ recruiterRouter.post("/jobs", async (req, res) => {
       return res.status(400).json({ success: false, error: "title must be a non-empty string up to 256 characters." });
     }
 
-    const job = await hanaDb.createJob({
+    const job = await db.createJob({
       title: title.trim(),
       company: typeof company === "string" ? company.trim().slice(0, 256) : "",
       location: typeof location === "string" ? location.trim().slice(0, 256) : "",
@@ -43,7 +43,7 @@ recruiterRouter.post("/jobs", async (req, res) => {
 
 recruiterRouter.get("/candidates", async (_req, res) => {
   try {
-    const candidates = await hanaDb.getCandidates();
+    const candidates = await db.getCandidates();
     return res.json({ success: true, candidates });
   } catch (error) {
     return sendInternalError(res, error, "Recruiter candidate lookup failed");

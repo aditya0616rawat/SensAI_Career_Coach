@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/requireAuth";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 import { sendInternalError } from "../lib/http";
 
 const authRouter = Router();
@@ -15,7 +15,7 @@ authRouter.post("/enroll", requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: "Only recruiter self-enrollment is supported." });
     }
 
-    await hanaDb.grantRecruiterAccess(res.locals.userId);
+    await db.grantRecruiterAccess(res.locals.userId);
     return res.status(201).json({ success: true, role: "recruiter" });
   } catch (error) {
     return sendInternalError(res, error, "Recruiter enrollment failed");

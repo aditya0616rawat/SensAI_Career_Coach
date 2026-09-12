@@ -3,7 +3,7 @@ import { HealthCheckResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
 
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 import { requireRecruiter } from "../middlewares/requireAuth";
 
 router.get("/healthz", (_req, res) => {
@@ -12,7 +12,7 @@ router.get("/healthz", (_req, res) => {
 });
 
 router.get("/db-status", requireRecruiter, (_req, res) => {
-  res.json(hanaDb.getStatus());
+  res.json(db.getStatus());
 });
 
 export default router;

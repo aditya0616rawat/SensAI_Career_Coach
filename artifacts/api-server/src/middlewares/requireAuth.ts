@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import { getAuth } from "@clerk/express";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 
 export type AppRole = "candidate" | "recruiter";
 
@@ -15,7 +15,7 @@ function recruiterUserIds(): Set<string> {
 
 export async function getAppRole(userId: string): Promise<AppRole> {
   if (recruiterUserIds().has(userId)) return "recruiter";
-  return (await hanaDb.isRecruiter(userId)) ? "recruiter" : "candidate";
+  return (await db.isRecruiter(userId)) ? "recruiter" : "candidate";
 }
 
 async function authenticate(req: Parameters<RequestHandler>[0], res: Parameters<RequestHandler>[1]): Promise<AppRole | null> {

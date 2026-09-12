@@ -2,7 +2,7 @@ import { Router } from "express";
 import { skillsDiscoveryAgent } from "../agents/skillsDiscoveryAgent";
 import { inclusiveMatchingAgent } from "../agents/inclusiveMatchingAgent";
 import { careerCoachAgent } from "../agents/jouleCareerAgent";
-import { hanaDb } from "../db/hana";
+import { db } from "../db/neon";
 import { requireAuth } from "../middlewares/requireAuth";
 import { sendInternalError } from "../lib/http";
 import { rateLimit } from "../middlewares/rateLimit";
@@ -61,7 +61,7 @@ candidateRouter.post("/onboarding/resume", async (req, res) => {
     const extracted = await skillsDiscoveryAgent.extractSkills(resumeText, getGroqKey());
 
     // Always associate the profile with the authenticated user — never trust a userId from the body.
-    const saved = await hanaDb.saveCandidateProfile({
+    const saved = await db.saveCandidateProfile({
       ...extracted,
       userId: authenticatedUserId,
       id: `cand_${authenticatedUserId}`,
@@ -210,7 +210,7 @@ Return ONLY a valid JSON object matching this schema:
       updatedAt: new Date().toISOString(),
     };
 
-    await hanaDb.saveCandidateProfile(mergedProfile);
+    await db.saveCandidateProfile(mergedProfile);
 
     return res.json({
       success: true,
@@ -283,7 +283,7 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
     };
 
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
-    const primaryJob = (await hanaDb.getJob(1)) || {
+    const primaryJob = (await db.getJob(1)) || {
       id: 1,
       title: profileData.targetRole || "Product Operations Lead",
       company: profileData.targetCompany || "",
@@ -300,7 +300,7 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
       profileData.fit = 84;
     }
 
-    const saved = await hanaDb.saveCandidateProfile(profileData);
+    const saved = await db.saveCandidateProfile(profileData);
 
     return res.json({
       success: true,
@@ -317,7 +317,7 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
 candidateRouter.get("/profile", async (req, res) => {
   try {
     const authenticatedUserId = res.locals.userId as string;
-    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    const profile = await db.getCandidateProfile(authenticatedUserId);
     return res.json({ success: true, profile });
   } catch (error) {
     return sendInternalError(res, error, "Profile lookup failed");
@@ -334,7 +334,7 @@ candidateRouter.put("/profile", async (req, res) => {
       userId: authenticatedUserId,
       id: `cand_${authenticatedUserId}`,
     };
-    const updated = await hanaDb.saveCandidateProfile(profileData);
+    const updated = await db.saveCandidateProfile(profileData);
     return res.json({ success: true, profile: updated, message: "Profile updated successfully." });
   } catch (error) {
     return sendInternalError(res, error, "Profile update failed");
@@ -345,7 +345,7 @@ candidateRouter.put("/profile", async (req, res) => {
 candidateRouter.get("/match", async (req, res) => {
   try {
     const authenticatedUserId = res.locals.userId as string;
-    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    const profile = await db.getCandidateProfile(authenticatedUserId);
     if (!profile) {
       return res.status(404).json({ success: false, error: "Candidate profile not found." });
     }
@@ -365,7 +365,7 @@ candidateRouter.get("/match", async (req, res) => {
 
     let targetJob = null;
     if (profile.targetRole) {
-      const allJobs = await hanaDb.getJobs();
+      const allJobs = await db.getJobs();
       targetJob = allJobs.find((j: any) => 
         j.title.toLowerCase().includes(profile.targetRole.toLowerCase()) || 
         profile.targetRole.toLowerCase().includes(j.title.toLowerCase())
@@ -387,7 +387,7 @@ candidateRouter.get("/match", async (req, res) => {
     // Store in profile so future page reloads and logins never re-trigger calculation
     profile.fit = match.overallFitScore;
     profile.latestMatch = match;
-    await hanaDb.saveCandidateProfile(profile);
+    await db.saveCandidateProfile(profile);
 
     return res.json({ success: true, match, framework: "Inclusive Matching Agent" });
   } catch (error) {
@@ -399,7 +399,7 @@ candidateRouter.get("/match", async (req, res) => {
 candidateRouter.post("/match/recalculate", async (_req, res) => {
   try {
     const authenticatedUserId = res.locals.userId as string;
-    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    const profile = await db.getCandidateProfile(authenticatedUserId);
     if (!profile) {
       return res.status(404).json({ success: false, error: "Candidate profile not found." });
     }
@@ -408,7 +408,7 @@ candidateRouter.post("/match/recalculate", async (_req, res) => {
 
     let targetJob = null;
     if (profile.targetRole) {
-      const allJobs = await hanaDb.getJobs();
+      const allJobs = await db.getJobs();
       targetJob = allJobs.find((j: any) => 
         j.title.toLowerCase().includes(profile.targetRole.toLowerCase()) || 
         profile.targetRole.toLowerCase().includes(j.title.toLowerCase())
@@ -428,7 +428,7 @@ candidateRouter.post("/match/recalculate", async (_req, res) => {
     const match = await inclusiveMatchingAgent.calculateMatchForProfile(profile, primaryJob, apiKey);
     profile.fit = match.overallFitScore;
     profile.latestMatch = match;
-    const saved = await hanaDb.saveCandidateProfile(profile);
+    const saved = await db.saveCandidateProfile(profile);
 
     return res.json({
       success: true,
@@ -446,7 +446,7 @@ candidateRouter.post("/match/recalculate", async (_req, res) => {
 // 7. GET Candidate Jobs — retrieves available job requisitions
 candidateRouter.get("/jobs", async (_req, res) => {
   try {
-    const jobs = await hanaDb.getJobs();
+    const jobs = await db.getJobs();
     return res.json({ success: true, jobs });
   } catch (error) {
     return sendInternalError(res, error, "Candidate jobs retrieval failed");
@@ -511,7 +511,7 @@ candidateRouter.post("/profile/sync-resume", async (req, res) => {
 candidateRouter.get("/skills", async (req, res) => {
   try {
     const authenticatedUserId = res.locals.userId as string;
-    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    const profile = await db.getCandidateProfile(authenticatedUserId);
     const skills = (profile?.skills || []).map((name: string, i: number) => ({
       name,
       level: 85 + (i % 10),
