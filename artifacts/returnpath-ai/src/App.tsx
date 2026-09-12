@@ -7,7 +7,7 @@ import { ClerkProvider, SignIn, SignUp, useAuth, useClerk, useUser } from '@cler
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import {
-  ArrowLeft, ArrowRight, Award, BarChart3, Bell, BookOpen, BriefcaseBusiness, Building2, Check,
+  AlertCircle, ArrowLeft, ArrowRight, Award, BarChart3, Bell, BookOpen, BriefcaseBusiness, Building2, Check,
   CheckCircle2, ChevronDown, ChevronRight, Clock3, Code, Compass, CreditCard,
   Download, FileCheck2, FileText, Filter, Gauge, GraduationCap, Heart, Inbox, Info,
   LayoutDashboard, Lightbulb, LineChart, ListFilter, LockKeyhole, LogOut, Menu, MessageCircle,
@@ -109,6 +109,8 @@ export type CandidateProfileData = {
   careerBreakYears: number;
   breakContext: string;
   readinessRating: number;
+  skillEvidence?: number;
+  readinessTier?: string;
   fit: number;
   skills: string[];
   education?: Array<{ degree: string; institution: string; year: string; score?: string }>;
@@ -117,6 +119,7 @@ export type CandidateProfileData = {
   certifications?: Array<{ name: string; issuer: string; year?: string }>;
   achievements?: string[];
   topStrengths?: string[];
+  latestMatch?: any;
 };
 
 export const createCleanProfile = (name = '', email = ''): CandidateProfileData => ({
@@ -130,7 +133,9 @@ export const createCleanProfile = (name = '', email = ''): CandidateProfileData 
   workMode: 'Hybrid',
   careerBreakYears: 0,
   breakContext: '',
-  readinessRating: 85,
+  readinessRating: 0,
+  skillEvidence: 0,
+  readinessTier: 'Not Started',
   fit: 80,
   skills: [],
   education: [],
@@ -140,6 +145,59 @@ export const createCleanProfile = (name = '', email = ''): CandidateProfileData 
   achievements: [],
   topStrengths: []
 });
+
+/**
+ * Calculates genuine profile completeness and skill evidence depth based on real candidate data
+ */
+export function calculateRealReadiness(profile: Partial<CandidateProfileData>) {
+  const skillsList = Array.isArray(profile?.skills) ? profile.skills : [];
+  const skillsCount = skillsList.length;
+  const projectsCount = Array.isArray(profile?.projects) ? profile.projects.length : 0;
+  const educationCount = Array.isArray(profile?.education) ? profile.education.length : 0;
+  const certsCount = (Array.isArray(profile?.certifications) ? profile.certifications.length : 0) +
+                     (Array.isArray(profile?.achievements) ? profile.achievements.length : 0);
+
+  // 1. Profile Signal (Real Completeness Score: 0 to 100%)
+  let signal = 0;
+  if (profile?.name && profile.name.trim().length > 0 && profile.name !== 'Candidate') signal += 15;
+  if (profile?.email && profile.email.includes('@')) signal += 15;
+  if (profile?.phone && profile.phone.trim().length > 4) signal += 10;
+  if (profile?.location && profile.location.trim().length > 0) signal += 10;
+  if (profile?.targetRole && profile.targetRole.trim().length > 0) signal += 15;
+  if (profile?.targetCompany && profile.targetCompany.trim().length > 0) signal += 10;
+  if (profile?.summary && profile.summary.trim().length > 15) signal += 10;
+  if (skillsCount >= 3) signal += 15;
+  const profileSignal = Math.min(100, Math.max(0, signal));
+
+  // 2. Skill Evidence Strength (Real Evidence Depth: 0 to 100%)
+  let evidence = 0;
+  if (skillsCount > 0) {
+    evidence += 40; // Base verified technical foundation
+    evidence += Math.min(25, skillsCount * 3); // Skills breadth
+    evidence += Math.min(25, projectsCount * 12); // Real project demonstrations
+    evidence += Math.min(10, educationCount * 5); // Academic degree
+    evidence += Math.min(8, certsCount * 4); // Certifications & achievements
+  }
+  const skillEvidence = Math.min(98, Math.max(skillsCount > 0 ? 55 : 0, evidence));
+
+  // 3. Dynamic Readiness Tier
+  let readinessTier = 'Not Started';
+  if (skillsCount >= 5 && projectsCount >= 2 && educationCount >= 1) {
+    readinessTier = 'Industry Ready';
+  } else if (skillsCount >= 3 && (projectsCount >= 1 || certsCount >= 1)) {
+    readinessTier = 'High Potential';
+  } else if (skillsCount > 0) {
+    readinessTier = 'Emerging Talent';
+  } else if (profile?.name) {
+    readinessTier = 'Building Foundation';
+  }
+
+  return {
+    profileSignal,
+    skillEvidence,
+    readinessTier
+  };
+}
 
 export const defaultProfile: CandidateProfileData = createCleanProfile();
 
@@ -386,6 +444,8 @@ type ProductState = {
   fit: number; completedLearning: boolean; savedJobs: number[]; applications: number[];
   shortlist: number[]; analysis: 'idle' | 'analyzing' | 'ready'; plan: string; toast: string;
   profile: CandidateProfileData;
+  latestMatch?: any;
+  setLatestMatch: (match: any) => void;
   isOnboarded: boolean;
   setIsOnboarded: (val: boolean) => void;
   updateProfile: (data: Partial<CandidateProfileData>) => Promise<void>;
@@ -477,7 +537,12 @@ function AuthRolePage({ role }: { role: AuthRole }) {
 }
 function AuthPage({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const role = getPendingRole();
-  const redirectTarget = role === 'candidate' ? `${basePath}/candidate/onboarding` : `${basePath}/${role}`;
+  const p = useProduct();
+  // Returning candidates signing in go directly to /candidate workspace.
+  // Only new sign-ups who have not onboarded yet go to /candidate/onboarding.
+  const redirectTarget = role === 'candidate'
+    ? (mode === 'sign-in' || p.isOnboarded ? `${basePath}/candidate` : `${basePath}/candidate/onboarding`)
+    : `${basePath}/${role}`;
   usePageMeta(mode === 'sign-in' ? 'Sign in' : 'Create your account', `${mode === 'sign-in' ? 'Sign in' : 'Create'} your ${role} ReturnPath AI account.`);
   return <div className="noise flex min-h-[100dvh] flex-col bg-[hsl(var(--background))]"><PublicNav /><main className="flex flex-1 items-center justify-center px-4 py-12"><div className="w-full max-w-[440px]"><div className="mb-5 text-center"><p className={`eyebrow ${role === 'candidate' ? 'text-[hsl(var(--cyan))]' : 'text-[hsl(var(--accent))]'}`}>{role === 'candidate' ? 'Candidate access' : 'Recruiter access'}</p><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">Continue to your {role} workspace.</p></div>{mode === 'sign-in' ? <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} forceRedirectUrl={redirectTarget} fallbackRedirectUrl={redirectTarget} /> : <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} forceRedirectUrl={redirectTarget} fallbackRedirectUrl={redirectTarget} />}</div></main></div>;
 }
@@ -487,29 +552,83 @@ function AuthSessionSync() {
   const p = useProduct();
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn) return;
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      // User signed out: clear active user context
+      const activeUserId = localStorage.getItem('rp-active-user-id');
+      if (activeUserId) {
+        localStorage.removeItem('rp-active-user-id');
+        localStorage.removeItem('rp-profile');
+        localStorage.removeItem('rp-onboarded');
+        localStorage.removeItem('rp-fit');
+        localStorage.removeItem('rp-latest-match');
+        localStorage.removeItem('rp-saved');
+        localStorage.removeItem('rp-applications');
+        localStorage.removeItem('rp-shortlist');
+        localStorage.removeItem('rp-learning');
+      }
+      return;
+    }
+
     const role = getPendingRole();
     localStorage.setItem('rp-role', role);
     localStorage.removeItem('rp-pending-role');
 
     if (user?.id) {
+      // Multi-candidate isolation: If a different candidate signs into this browser, wipe previous candidate's cache
+      const activeUserId = localStorage.getItem('rp-active-user-id');
+      if (activeUserId && activeUserId !== user.id) {
+        localStorage.removeItem('rp-profile');
+        localStorage.removeItem('rp-onboarded');
+        localStorage.removeItem('rp-fit');
+        localStorage.removeItem('rp-latest-match');
+        localStorage.removeItem('rp-saved');
+        localStorage.removeItem('rp-applications');
+        localStorage.removeItem('rp-shortlist');
+        localStorage.removeItem('rp-learning');
+
+        p.setFit(0);
+        p.setLatestMatch(null);
+        p.setIsOnboarded(false);
+      }
+      localStorage.setItem('rp-active-user-id', user.id);
+
+      // Fetch user's own profile strictly tied to their authenticated session
       fetch('/api/candidate/profile')
         .then(r => r.json())
         .then(data => {
           if (data?.profile && data.profile.name && (data.profile.skills?.length > 0 || data.profile.targetRole)) {
             p.setIsOnboarded(true);
             p.updateProfile(data.profile);
+            if (typeof data.profile.fit === 'number' && data.profile.fit > 0) {
+              p.setFit(data.profile.fit);
+            }
+            if (data.profile.latestMatch) {
+              p.setLatestMatch(data.profile.latestMatch);
+            }
           } else {
+            // Fresh candidate profile with zero cross-user pollution
             p.setIsOnboarded(false);
+            p.setFit(0);
+            p.setLatestMatch(null);
             if (user.fullName || user.firstName) {
               p.updateProfile({
                 name: user.fullName || user.firstName || '',
-                email: user.primaryEmailAddress?.emailAddress || ''
+                email: user.primaryEmailAddress?.emailAddress || '',
+                targetRole: '',
+                skills: [],
+                projects: [],
+                fit: 0
               });
             }
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (localStorage.getItem('rp-onboarded') === 'true') {
+            p.setIsOnboarded(true);
+          }
+        });
     }
   }, [isLoaded, isSignedIn, user?.id]);
 
@@ -554,7 +673,38 @@ function Progress({ value = 0, color = 'bg-[hsl(var(--primary))]' }: { value?: n
 }
 function PublicNav() {
   const [open, setOpen] = useState(false);
-  return <header className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 backdrop-blur"><div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8"><Logo /><nav className="hidden items-center gap-7 text-sm text-[hsl(var(--muted-foreground))] md:flex"><Link href="/how-it-works" data-testid="link-how-it-works" className="hover:text-[hsl(var(--foreground))]">How it works</Link><Link href="/about" data-testid="link-about" className="hover:text-[hsl(var(--foreground))]">Our point of view</Link><Link href="/pricing" data-testid="link-pricing" className="hover:text-[hsl(var(--foreground))]">Pricing</Link></nav><div className="hidden items-center gap-3 md:flex"><Link href="/auth/candidate" data-testid="link-sign-in" className="px-3 text-sm font-semibold">Sign in</Link><Link href="/auth/candidate" data-testid="link-start-return" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Start your return <ArrowRight size={15} className="ml-2" /></Link></div><button onClick={() => setOpen(!open)} data-testid="button-mobile-menu" className="rounded-lg p-2 md:hidden"><Menu size={22} /></button></div>{open && <div className="border-t border-[hsl(var(--border))] p-5 md:hidden"><div className="grid gap-3 text-sm"><Link href="/how-it-works" data-testid="mobile-link-how">How it works</Link><Link href="/about" data-testid="mobile-link-about">Our point of view</Link><Link href="/pricing" data-testid="mobile-link-pricing">Pricing</Link><Link href="/auth/candidate" data-testid="mobile-link-start" className="font-semibold text-[hsl(var(--primary))]">Start your return</Link></div></div>}</header>;
+  return (
+    <header className="border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 backdrop-blur">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8">
+        <Logo />
+        <nav className="hidden items-center gap-7 text-sm text-[hsl(var(--muted-foreground))] md:flex">
+          <Link href="/how-it-works" data-testid="link-how-it-works" className="hover:text-[hsl(var(--foreground))]">How it works</Link>
+          <Link href="/about" data-testid="link-about" className="hover:text-[hsl(var(--foreground))]">Our point of view</Link>
+          <Link href="/pricing" data-testid="link-pricing" className="hover:text-[hsl(var(--foreground))]">Pricing</Link>
+        </nav>
+        <div className="hidden items-center gap-3 md:flex">
+          <Link href="/auth/candidate" data-testid="link-sign-in" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))] hover:brightness-105 transition-all">
+            Sign in
+          </Link>
+        </div>
+        <button onClick={() => setOpen(!open)} data-testid="button-mobile-menu" className="rounded-lg p-2 md:hidden">
+          <Menu size={22} />
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-[hsl(var(--border))] p-5 md:hidden">
+          <div className="grid gap-3 text-sm">
+            <Link href="/how-it-works" data-testid="mobile-link-how">How it works</Link>
+            <Link href="/about" data-testid="mobile-link-about">Our point of view</Link>
+            <Link href="/pricing" data-testid="mobile-link-pricing">Pricing</Link>
+            <Link href="/auth/candidate" data-testid="mobile-link-sign-in" className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">
+              Sign in
+            </Link>
+          </div>
+        </div>
+      )}
+    </header>
+  );
 }
 function PublicFooter() {
   return <footer className="border-t border-[hsl(var(--border))] bg-[hsl(var(--sidebar))] px-5 py-12 text-[hsl(var(--sidebar-foreground))] lg:px-8"><div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]"><div><Logo light /><p className="mt-5 max-w-xs text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/65">A clearer next step for people returning to work — and the teams ready to see their capability.</p></div><div><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/50">Explore</p><div className="mt-4 grid gap-3 text-sm text-[hsl(var(--sidebar-foreground))]/75"><Link href="/how-it-works" data-testid="footer-link-how">How it works</Link><Link href="/architecture" data-testid="footer-link-architecture">Architecture</Link><Link href="/pricing" data-testid="footer-link-pricing">Pricing</Link></div></div><div><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/50">Workspaces</p><div className="mt-4 grid gap-3 text-sm text-[hsl(var(--sidebar-foreground))]/75"><Link href="/candidate" data-testid="footer-link-candidate">Candidate workspace</Link><Link href="/recruiter" data-testid="footer-link-recruiter">Recruiter workspace</Link><Link href="/recruiter/bias-audit" data-testid="footer-link-audit">Fairness monitor</Link></div></div><div><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/50">Principle</p><p className="mt-4 text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/75">AI recommends. Recruiter decides.</p></div></div><div className="mx-auto mt-12 max-w-7xl border-t border-[hsl(var(--sidebar-foreground))]/15 pt-5 text-xs text-[hsl(var(--sidebar-foreground))]/45">© 2025 ReturnPath AI · Built for capability, not chronology.</div></footer>;
@@ -677,8 +827,35 @@ function WorkspaceShell({ role, children }: { role: 'candidate' | 'recruiter'; c
 
   return <div className="min-h-[100dvh] bg-[hsl(var(--background))]"><aside className={`fixed inset-y-0 left-0 z-30 w-[245px] bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}><div className="flex items-center justify-between"><Logo light /><button onClick={() => setMobileOpen(false)} data-testid="button-close-sidebar" className="md:hidden"><X size={18} /></button></div><div className="mt-10"><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/45">{role === 'candidate' ? 'My workspace' : 'Talent workspace'}</p><nav className="mt-3 grid gap-1">{nav.map(([href, label, Icon]) => <Link href={href} key={href} onClick={() => setMobileOpen(false)} data-testid={`nav-${label.toLowerCase().replaceAll(' ', '-')}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${location === href ? 'bg-[hsl(var(--sidebar-foreground))]/12 text-[hsl(var(--accent))]' : 'text-[hsl(var(--sidebar-foreground))]/65 hover:bg-[hsl(var(--sidebar-foreground))]/8 hover:text-[hsl(var(--sidebar-foreground))]'}`}><Icon size={17} />{label}</Link>)}</nav></div><div className="absolute bottom-5 left-5 right-5 space-y-2"><div className="rounded-xl border border-[hsl(var(--sidebar-foreground))]/12 bg-[hsl(var(--sidebar-foreground))]/5 p-3"><div className="flex items-center gap-2 text-xs"><ShieldCheck size={15} className="text-[hsl(var(--accent))]" /> <span>SAP BTP Verified</span></div><p className="mt-2 text-[11px] leading-4 text-[hsl(var(--sidebar-foreground))]/45">100% Skills-First & Bias Neutral.</p></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="sidebar-button-sign-out" className="flex w-full items-center justify-center gap-2 rounded-lg border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 py-2 text-xs font-semibold text-[hsl(var(--sidebar-foreground))]/70 transition hover:bg-[hsl(var(--sidebar-foreground))]/10 hover:text-white"><LogOut size={14} /><span>Sign out</span></button></div></aside><div className="md:pl-[245px]"><header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 px-5 backdrop-blur lg:px-8"><button onClick={() => setMobileOpen(true)} data-testid="button-open-sidebar" className="rounded-lg p-2 md:hidden"><Menu size={21} /></button><div className="hidden md:block"><p className="eyebrow">{role === 'candidate' ? 'Candidate workspace · SAP Talent Hub' : 'Recruiter workspace · SAP SuccessFactors'}</p></div><div className="ml-auto flex items-center gap-3"><button data-testid="button-notifications" className="rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"><Bell size={18} /></button><div className="flex items-center gap-2 border-l border-[hsl(var(--border))] pl-3">{user?.imageUrl ? <img src={user.imageUrl} alt={displayName} className="h-8 w-8 rounded-full border border-[hsl(var(--border))]" /> : <div className="grid h-8 w-8 place-items-center rounded-full bg-[#d98459] text-xs font-semibold text-white">{initials}</div>}<span className="hidden text-sm font-semibold sm:block">{displayName}</span></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="button-sign-out" title="Sign out" className="ml-1 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]/80 px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--destructive))]/40 hover:bg-[hsl(var(--destructive))]/10 hover:text-[hsl(var(--destructive))]"><LogOut size={14} /><span className="hidden sm:inline">Sign out</span></button></div></header><main className="mx-auto max-w-[1440px] px-5 py-8 lg:px-9 lg:py-10">{children}</main></div></div>;
 }
-function PageTitle({ eyebrow, title, description, action }: { eyebrow: string; title: string; description?: string; action?: ReactNode }) {
-  return <div className="mb-8 flex flex-wrap items-start justify-between gap-5"><div><p className="eyebrow text-[hsl(var(--primary))]">{eyebrow}</p><h1 className="mt-2 font-display text-4xl leading-tight tracking-[-.03em]">{title}</h1>{description && <p className="mt-3 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description}</p>}</div>{action}</div>;
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function useTimeGreeting(): string {
+  const [greeting, setGreeting] = useState(getTimeGreeting);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGreeting(getTimeGreeting());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+  return greeting;
+}
+
+function PageTitle({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description?: string; action?: ReactNode }) {
+  return (
+    <div className="mb-8 flex flex-wrap items-start justify-between gap-5">
+      <div>
+        {eyebrow ? <p className="eyebrow text-[hsl(var(--primary))]">{eyebrow}</p> : null}
+        <h1 className={`${eyebrow ? 'mt-2' : ''} font-display text-4xl leading-tight tracking-[-.03em]`}>{title}</h1>
+        {description && <p className="mt-3 max-w-2xl text-sm leading-6 text-[hsl(var(--muted-foreground))]">{description}</p>}
+      </div>
+      {action}
+    </div>
+  );
 }
 function EmptyState({ icon: Icon, title, body, action }: { icon: typeof Inbox; title: string; body: string; action?: ReactNode }) {
   return <div className="surface rounded-2xl p-10 text-center"><div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"><Icon size={21} /></div><h3 className="mt-4 font-display text-2xl">{title}</h3><p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[hsl(var(--muted-foreground))]">{body}</p>{action && <div className="mt-5">{action}</div>}</div>;
@@ -686,6 +863,7 @@ function EmptyState({ icon: Icon, title, body, action }: { icon: typeof Inbox; t
 function CandidateHome() {
   const p = useProduct(); 
   const { user } = useUser();
+  const greeting = useTimeGreeting();
   const [syncing, setSyncing] = useState(false);
   usePageMeta('Candidate overview', 'Your ReturnPath career workspace.');
 
@@ -706,8 +884,29 @@ function CandidateHome() {
       const data = await res.json();
       if (data?.profile && data.profile.name) {
         await p.updateProfile(data.profile);
-        p.notify('Synced latest profile from SAP Talent Intelligence Hub.');
+        if (typeof data.profile.fit === 'number' && data.profile.fit > 0) {
+          p.setFit(data.profile.fit);
+        }
+        if (data.profile.latestMatch) {
+          p.setLatestMatch(data.profile.latestMatch);
+        }
       }
+
+      // If match is not yet populated in the profile, fetch stored match from database
+      if (!p.latestMatch && !data?.profile?.latestMatch) {
+        try {
+          const matchRes = await fetch('/api/candidate/match');
+          const matchData = await matchRes.json();
+          if (matchData?.match) {
+            p.setLatestMatch(matchData.match);
+            if (typeof matchData.match.overallFitScore === 'number') {
+              p.setFit(matchData.match.overallFitScore);
+            }
+          }
+        } catch {}
+      }
+
+      p.notify('Synced capability signals with SAP Talent Intelligence Hub.');
     } catch {
       p.notify('Connected to local verified profile.');
     } finally {
@@ -722,10 +921,19 @@ function CandidateHome() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id && !p.isOnboarded && !hasData && !syncing) {
+    const localOnboarded = localStorage.getItem('rp-onboarded') === 'true';
+    if (user?.id && !p.isOnboarded && !localOnboarded && !hasData && !syncing) {
       setLocation('/candidate/onboarding');
     }
   }, [user?.id, p.isOnboarded, hasData, syncing, setLocation]);
+
+  const realMetrics = useMemo(() => {
+    return calculateRealReadiness(profile);
+  }, [profile]);
+
+  const currentMatch = p.latestMatch;
+  const currentFitScore = p.fit || currentMatch?.overallFitScore || (hasData ? 84 : 0);
+  const boostProjected = currentMatch?.threeWeekBoostProjected ? `${currentMatch.threeWeekBoostProjected}%` : (hasData ? '91%' : '—');
 
   return <WorkspaceShell role="candidate">
     {!p.isOnboarded && (
@@ -747,26 +955,12 @@ function CandidateHome() {
     )}
 
     <PageTitle 
-      eyebrow="SAP Talent Intelligence Hub · Capability Overview" 
-      title={`Good morning, ${firstName}.`} 
+      title={`${greeting}, ${firstName}.`} 
       description="Your verified capabilities, real-world projects, and match signals are synced live with SAP HANA Cloud." 
       action={
-        <div className="flex flex-wrap items-center gap-2">
-          <button 
-            onClick={syncBackend} 
-            disabled={syncing}
-            className="inline-flex min-h-10 items-center rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 text-xs font-semibold text-[hsl(var(--foreground))] transition hover:border-[hsl(var(--primary))] hover:bg-[hsl(var(--muted))]"
-          >
-            <RefreshCcw size={14} className={`mr-2 ${syncing ? 'animate-spin text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'}`} />
-            {syncing ? 'Syncing...' : 'Sync Backend Profile'}
-          </button>
-          <Link href="/candidate/profile" className="inline-flex min-h-10 items-center rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 text-xs font-semibold text-[hsl(var(--foreground))] transition hover:bg-[hsl(var(--muted))]">
-            <Pencil size={14} className="mr-1.5 text-[hsl(var(--primary))]" /> Edit Profile
-          </Link>
-          <Link href="/candidate/jobs" data-testid="link-explore-from-home" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-xs font-semibold text-[hsl(var(--primary-foreground))]">
-            Explore roles <ArrowRight size={14} className="ml-1.5" />
-          </Link>
-        </div>
+        <Link href="/candidate/jobs" data-testid="link-explore-from-home" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-xs font-semibold text-[hsl(var(--primary-foreground))]">
+          Explore roles <ArrowRight size={14} className="ml-1.5" />
+        </Link>
       } 
     />
 
@@ -776,14 +970,18 @@ function CandidateHome() {
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <div className="flex items-center gap-2">
-              <p className="eyebrow text-[hsl(var(--accent))]">Skills-First Match</p>
-              <Badge tone={hasData ? 'good' : 'quiet'}>{hasData ? `${profile.readinessRating || 90}% Capability Verified` : 'Awaiting Setup'}</Badge>
+              <p className="eyebrow text-[hsl(var(--accent))]">SAP Inclusive Match</p>
+              <Badge tone={hasData ? 'good' : 'quiet'}>{hasData ? `${realMetrics.profileSignal}% Capability Verified` : 'Awaiting Setup'}</Badge>
             </div>
-            <h2 className="mt-3 font-display text-3xl">{profile.targetRole || 'Discover Your Best Fit Role'}</h2>
+            <h2 className="mt-3 font-display text-3xl">{profile.targetRole || currentMatch?.jobTitle || 'Discover Your Best Fit Role'}</h2>
             <p className="mt-2 text-sm text-[hsl(var(--sidebar-foreground))]/60">
-              {profile.targetCompany || 'SAP Labs & Enterprise Partners'} · {profile.workMode || 'Hybrid'} {profile.location ? `· ${profile.location}` : ''}
+              {profile.targetCompany || currentMatch?.company || 'SAP Labs & Enterprise Partners'} · {profile.workMode || 'Hybrid'} {profile.location ? `· ${profile.location}` : ''}
             </p>
-            {profile.summary ? (
+            {currentMatch?.matchSummary ? (
+              <p className="mt-3 max-w-xl text-xs leading-relaxed text-[hsl(var(--sidebar-foreground))]/80">
+                {currentMatch.matchSummary}
+              </p>
+            ) : profile.summary ? (
               <p className="mt-3 max-w-xl text-xs leading-relaxed text-[hsl(var(--sidebar-foreground))]/75">
                 {profile.summary}
               </p>
@@ -792,31 +990,41 @@ function CandidateHome() {
                 Upload your resume or chat with Joule to extract your core technical skills, verified achievements, and matching roles.
               </p>
             )}
+
+            {currentMatch?.matchingStrengths?.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {currentMatch.matchingStrengths.slice(0, 3).map((st: string, i: number) => (
+                  <span key={i} className="inline-flex items-center rounded-md bg-[hsl(var(--sidebar-foreground))]/10 px-2 py-0.5 text-[11px] text-[hsl(var(--sidebar-foreground))]/90">
+                    <CheckCircle2 size={11} className="mr-1 text-[hsl(var(--accent))]" /> {st}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-          <Score value={p.fit || (hasData ? 84 : 0)} />
+          <Score value={currentFitScore} />
         </div>
 
         <div className="mt-8 grid gap-3 border-t border-[hsl(var(--sidebar-foreground))]/15 pt-5 sm:grid-cols-3">
           <div>
             <p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Current fit</p>
-            <p className="mt-1 font-data text-xl">{p.fit || (hasData ? 84 : 0)}%</p>
+            <p className="mt-1 font-data text-xl">{currentFitScore}%</p>
           </div>
           <div>
             <p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">After skill bridge</p>
-            <p className="mt-1 font-data text-xl text-[hsl(var(--accent))]">{hasData ? '91%' : '—'}</p>
+            <p className="mt-1 font-data text-xl text-[hsl(var(--accent))]">{boostProjected}</p>
           </div>
           <div>
             <p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Verified readiness</p>
             <p className="mt-1 text-xs font-semibold text-[#86efac]">
-              {hasData ? `${profile.readinessRating || 88}% High Potential` : 'Pending Onboarding'}
+              {hasData ? `${realMetrics.skillEvidence}% ${realMetrics.readinessTier}` : 'Pending Onboarding'}
             </p>
           </div>
         </div>
 
-        {profile.breakContext ? (
-          <div className="mt-4 rounded-xl border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 p-3 text-xs text-[hsl(var(--sidebar-foreground))]/70">
-            <span className="font-semibold text-[hsl(var(--accent))]">Candidate Context: </span>
-            {profile.breakContext}
+        {(currentMatch?.breakNeutralityExplanation && Number(profile.careerBreakYears) > 0) ? (
+          <div className="mt-4 rounded-xl border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 p-3 text-xs text-[hsl(var(--sidebar-foreground))]/80">
+            <span className="font-semibold text-[hsl(var(--accent))]">Inclusive Matching Agent: </span>
+            {currentMatch.breakNeutralityExplanation}
           </div>
         ) : null}
 
@@ -834,24 +1042,34 @@ function CandidateHome() {
         <div className="flex items-center justify-between">
           <div>
             <p className="eyebrow">Talent readiness</p>
-            <p className="mt-2 font-display text-2xl">{hasData ? 'High Potential' : 'Not Started'}</p>
+            <p className="mt-2 font-display text-2xl">{hasData ? realMetrics.readinessTier : 'Not Started'}</p>
           </div>
           <Gauge size={22} className="text-[hsl(var(--primary))]" />
         </div>
         <div className="mt-7">
           <div className="flex justify-between text-sm">
             <span>Profile Signal</span>
-            <span className="font-data">{profile.readinessRating || 0}%</span>
+            <span className="font-data">{realMetrics.profileSignal}%</span>
           </div>
-          <Progress value={profile.readinessRating || 0} />
-          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">{hasData ? 'Verified by SAP Skills Discovery Agent' : 'Complete onboarding to generate signal'}</p>
+          <Progress value={realMetrics.profileSignal} />
+          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+            {hasData ? `${skills.length} skills · ${profile.projects?.length || 0} projects · ${profile.education?.length || 0} degrees verified` : 'Complete onboarding to generate signal'}
+          </p>
         </div>
         <div className="mt-6">
           <div className="flex justify-between text-sm">
             <span>Skill Evidence</span>
-            <span className="font-data">{p.completedLearning ? '91%' : (hasData ? '84%' : '0%')}</span>
+            <span className="font-data">
+              {p.completedLearning ? Math.min(100, realMetrics.skillEvidence + 7) : realMetrics.skillEvidence}%
+            </span>
           </div>
-          <Progress value={p.completedLearning ? 91 : (hasData ? 84 : 0)} color="bg-[hsl(var(--accent))]" />
+          <Progress 
+            value={p.completedLearning ? Math.min(100, realMetrics.skillEvidence + 7) : realMetrics.skillEvidence} 
+            color="bg-[hsl(var(--accent))]" 
+          />
+          <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">
+            {hasData ? `${profile.projects?.length || 0} portfolio projects backing technical capabilities` : 'Attach project evidence to elevate signal'}
+          </p>
         </div>
         <div className="mt-7 flex items-center justify-between border-t border-[hsl(var(--border))] pt-4">
           <span className="text-xs text-[hsl(var(--muted-foreground))]">Talent Hub Evaluation</span>
@@ -1359,6 +1577,7 @@ function ResumeSyncModal({
                   className="sr-only"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
+                    e.target.value = '';
                     if (file) handleScan(file);
                   }}
                 />
@@ -1800,8 +2019,57 @@ function CandidateProfile() {
   const email = form.email || user?.primaryEmailAddress?.emailAddress || '';
   const initials = user?.firstName ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}` : (name ? name.slice(0, 2).toUpperCase() : 'CD');
 
+  const [recalculatingFit, setRecalculatingFit] = useState(false);
+
+  const handleRecalculateFit = async () => {
+    setRecalculatingFit(true);
+    try {
+      const realMetrics = calculateRealReadiness(form);
+      const updatedForm = {
+        ...form,
+        readinessRating: realMetrics.profileSignal,
+        skillEvidence: realMetrics.skillEvidence,
+        readinessTier: realMetrics.readinessTier,
+      };
+      await p.updateProfile(updatedForm);
+      const res = await fetch('/api/candidate/match/recalculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (data?.match) {
+        p.setLatestMatch(data.match);
+        if (typeof data.match.overallFitScore === 'number') {
+          p.setFit(data.match.overallFitScore);
+          const finalProfile = {
+            ...updatedForm,
+            fit: data.match.overallFitScore,
+            latestMatch: data.match,
+          };
+          setForm(finalProfile);
+          await p.updateProfile(finalProfile);
+        }
+        p.notify(`Fit score updated to ${data.match.overallFitScore}% based on your latest capabilities!`);
+      } else {
+        p.notify(data?.error || 'Unable to update fit score at this time.');
+      }
+    } catch {
+      p.notify('Failed to reach SAP Inclusive Matching Agent.');
+    } finally {
+      setRecalculatingFit(false);
+    }
+  };
+
   const handleSave = async () => {
-    await p.updateProfile(form);
+    const realMetrics = calculateRealReadiness(form);
+    const updated = {
+      ...form,
+      readinessRating: realMetrics.profileSignal,
+      skillEvidence: realMetrics.skillEvidence,
+      readinessTier: realMetrics.readinessTier
+    };
+    setForm(updated);
+    await p.updateProfile(updated);
     setSaved(true);
     setEditing(false);
     p.notify('Comprehensive profile saved to SAP Talent Intelligence Hub.');
@@ -1814,8 +2082,15 @@ function CandidateProfile() {
         onClose={() => setSyncModalOpen(false)}
         currentProfile={form}
         onApply={async (updated) => {
-          setForm(updated);
-          await p.updateProfile(updated);
+          const realMetrics = calculateRealReadiness(updated);
+          const finalProfile = {
+            ...updated,
+            readinessRating: realMetrics.profileSignal,
+            skillEvidence: realMetrics.skillEvidence,
+            readinessTier: realMetrics.readinessTier,
+          };
+          setForm(finalProfile);
+          await p.updateProfile(finalProfile);
           p.notify('Profile successfully updated from resume.');
         }}
       />
@@ -1831,6 +2106,15 @@ function CandidateProfile() {
             >
               <Sparkles size={14} className="mr-1.5 text-[hsl(var(--primary))]" /> Sync with Resume
             </button>
+            <Button
+              onClick={handleRecalculateFit}
+              disabled={recalculatingFit}
+              className="bg-[hsl(var(--primary))] text-white shadow-sm"
+              data-testid="button-recalculate-fit-top"
+            >
+              <RefreshCcw size={14} className={recalculatingFit ? "animate-spin mr-1.5" : "mr-1.5"} />
+              {recalculatingFit ? "Recalculating..." : "Update Fit Score"}
+            </Button>
             <Button onClick={() => setEditing(!editing)} data-testid="button-edit-profile" variant="outline">
               <Pencil size={15} /> {editing ? 'Cancel' : 'Edit profile'}
             </Button>
@@ -1842,6 +2126,50 @@ function CandidateProfile() {
           </div>
         }
       />
+
+      {/* Dedicated SAP Inclusive Matching Agent Fit Banner */}
+      <section className="mb-6 surface rounded-2xl border-2 border-[hsl(var(--primary))]/20 bg-gradient-to-r from-[hsl(var(--primary))]/10 via-[hsl(var(--card))] to-transparent p-5 sm:p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[hsl(var(--primary))]/15 text-[hsl(var(--primary))]">
+              <Radar size={24} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="eyebrow text-[hsl(var(--primary))]">SAP Inclusive Matching Agent</p>
+                <Badge tone="good"><CheckCircle2 size={12} className="mr-1" /> Locked & Persisted</Badge>
+                {Number(form.careerBreakYears) > 0 ? (
+                  <Badge tone="quiet">0% Break Penalty</Badge>
+                ) : (
+                  <Badge tone="good">100% Skills-First</Badge>
+                )}
+              </div>
+              <h3 className="mt-1 font-display text-2xl">
+                Capability Fit Score: <span className="text-[hsl(var(--primary))]">{p.fit || p.latestMatch?.overallFitScore || form.fit || 84}%</span>
+              </h3>
+              <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                Stored in SAP HANA Cloud. Score is preserved across page reloads and only updates when you explicitly calibrate with new skills or projects.
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleRecalculateFit}
+            disabled={recalculatingFit}
+            size="lg"
+            className="bg-[hsl(var(--primary))] text-white shadow transition hover:brightness-105"
+            data-testid="button-recalculate-fit-card"
+          >
+            <RefreshCcw size={15} className={recalculatingFit ? "animate-spin mr-2" : "mr-2"} />
+            {recalculatingFit ? "Calibrating Capability Fit..." : "Update Fit Score"}
+          </Button>
+        </div>
+        {p.latestMatch?.breakNeutralityExplanation && Number(form.careerBreakYears) > 0 && (
+          <div className="mt-4 rounded-xl border border-[hsl(var(--primary))]/15 bg-[hsl(var(--primary))]/5 p-3 text-xs text-[hsl(var(--muted-foreground))]">
+            <span className="font-semibold text-[hsl(var(--primary))]">Inclusive Workforce Protocol: </span>
+            {p.latestMatch.breakNeutralityExplanation}
+          </div>
+        )}
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_.95fr]">
         {/* Left Column: Core Identity, Summary, Target & Break Context */}
@@ -2139,7 +2467,7 @@ function CandidateOnboarding() {
 
   // Resume Upload State
   const [resumeText, setResumeText] = useState('');
-  const [uploadStage, setUploadStage] = useState<'idle' | 'parsing' | 'review'>('idle');
+  const [uploadStage, setUploadStage] = useState<'idle' | 'parsing' | 'review' | 'target'>('idle');
   const [dragActive, setDragActive] = useState(false);
   const [showPasteArea, setShowPasteArea] = useState(false);
   const [pasteInput, setPasteInput] = useState('');
@@ -2160,8 +2488,10 @@ function CandidateOnboarding() {
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
       setLocation('/auth/candidate');
+    } else if (isLoaded && isSignedIn && (p.isOnboarded || localStorage.getItem('rp-onboarded') === 'true') && (p.profile.skills?.length > 0 || p.profile.targetRole)) {
+      setLocation('/candidate');
     }
-  }, [isLoaded, isSignedIn, setLocation]);
+  }, [isLoaded, isSignedIn, p.isOnboarded, p.profile.skills?.length, p.profile.targetRole, setLocation]);
 
   if (!isLoaded) {
     return <div className="grid min-h-[100dvh] place-items-center bg-[#dfe9e4]"><RefreshCcw size={22} className="animate-spin text-[hsl(var(--primary))]" /></div>;
@@ -2326,20 +2656,69 @@ function CandidateOnboarding() {
     }
   }
 
-  // Finalize Onboarding
+  const [setupProgress, setSetupProgress] = useState<number | null>(null);
+  const [setupStatus, setSetupStatus] = useState<string>('');
+
+  // Finalize Onboarding and enter candidate workspace with dashboard calibration loader
   async function finishOnboarding() {
     setLoading(true);
+    setSetupProgress(15);
+    setSetupStatus('Calibrating verified capabilities with SAP Talent Intelligence Hub...');
+
+    const timer1 = window.setTimeout(() => {
+      setSetupProgress(40);
+      setSetupStatus(Number(profile.careerBreakYears) > 0 
+        ? 'Evaluating career break with 0% penalty policy...' 
+        : 'Mapping skills to enterprise capability framework...');
+    }, 450);
+
+    const timer2 = window.setTimeout(() => {
+      setSetupProgress(70);
+      setSetupStatus('Personalizing your 3-week SAP Learning Hub pathway...');
+    }, 900);
+
     try {
-      p.setIsOnboarded(true);
-      await p.updateProfile(profile);
-      await fetch('/api/candidate/onboarding/complete', {
+      const realMetrics = calculateRealReadiness(profile);
+      const profileToSave = {
+        ...profile,
+        readinessRating: realMetrics.profileSignal,
+        skillEvidence: realMetrics.skillEvidence,
+        readinessTier: realMetrics.readinessTier,
+      };
+      await p.updateProfile(profileToSave);
+      const res = await fetch('/api/candidate/onboarding/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile)
+        body: JSON.stringify(profileToSave)
       });
-      p.notify('Welcome! Your SAP Talent Intelligence Hub profile is ready.');
-      setLocation('/candidate');
+      const data = await res.json();
+      window.clearTimeout(timer1);
+      window.clearTimeout(timer2);
+      setSetupProgress(90);
+      setSetupStatus('Persisting candidate capability signals to SAP HANA Cloud...');
+
+      if (data?.match) {
+        p.setLatestMatch(data.match);
+        if (typeof data.match.overallFitScore === 'number') {
+          p.setFit(data.match.overallFitScore);
+          profileToSave.fit = data.match.overallFitScore;
+          profileToSave.latestMatch = data.match;
+          await p.updateProfile(profileToSave);
+        }
+      }
+
+      window.setTimeout(() => {
+        setSetupProgress(100);
+        setSetupStatus('Ready! Launching your personalized workspace...');
+        window.setTimeout(() => {
+          p.setIsOnboarded(true);
+          p.notify('Welcome! Your verified talent profile is ready.');
+          setLocation('/candidate');
+        }, 550);
+      }, 400);
     } catch {
+      window.clearTimeout(timer1);
+      window.clearTimeout(timer2);
       p.setIsOnboarded(true);
       setLocation('/candidate');
     } finally {
@@ -2351,14 +2730,62 @@ function CandidateOnboarding() {
     <div className="min-h-[100dvh] bg-[#dfe9e4]">
       <header className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 lg:px-8">
         <Logo />
-        <Link href="/candidate" data-testid="link-onboarding-exit" className="text-sm font-semibold text-[hsl(var(--foreground))]/70 hover:text-[hsl(var(--foreground))]">
-          Save and exit
-        </Link>
       </header>
 
       <main className="mx-auto max-w-3xl px-5 py-8 lg:py-14">
-        {/* Pathway Selector Screen */}
-        {mode === 'select' && (
+        {setupProgress !== null ? (
+          <div className="surface mx-auto max-w-xl rounded-3xl border border-[hsl(var(--primary))]/25 p-8 sm:p-10 text-center shadow-xl">
+            <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[hsl(var(--primary))]/15 text-[hsl(var(--primary))] animate-pulse">
+              <Radar size={32} />
+            </div>
+            <p className="eyebrow mt-5 text-[hsl(var(--primary))]">SAP Talent Intelligence Hub</p>
+            <h1 className="mt-2 font-display text-3xl font-semibold">Setting up your dashboard...</h1>
+            <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
+              The SAP Inclusive Matching Agent is calibrating your capability signals and personalizing your 3-week skill bridge.
+            </p>
+
+            <div className="mt-8">
+              <div className="flex justify-between text-xs font-semibold text-[hsl(var(--muted-foreground))] mb-2">
+                <span>Calibration Progress</span>
+                <span className="font-data text-[hsl(var(--primary))]">{setupProgress}%</span>
+              </div>
+              <Progress value={setupProgress} color="bg-[hsl(var(--primary))]" />
+              <p className="mt-3 text-xs font-medium text-[hsl(var(--primary))] animate-pulse">
+                {setupStatus}
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-3 text-left border-t border-[hsl(var(--border))] pt-6">
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 20 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
+                  <CheckCircle2 size={12} />
+                </div>
+                <span>Demonstrated capabilities & projects indexed</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 40 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
+                  <CheckCircle2 size={12} />
+                </div>
+                <span>Zero-penalty career break policy applied</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 70 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
+                  <CheckCircle2 size={12} />
+                </div>
+                <span>Personalized 3-week SAP Learning Hub pathway curated</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-medium">
+                <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 95 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
+                  <CheckCircle2 size={12} />
+                </div>
+                <span>Candidate dashboard persisted in SAP HANA Cloud</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Pathway Selector Screen */}
+            {mode === 'select' && (
           <div>
             <p className="eyebrow text-[hsl(var(--primary))]">ReturnPath AI · Welcome</p>
             <h1 className="mt-4 font-display text-4xl leading-tight sm:text-5xl">How would you like to build your talent profile?</h1>
@@ -2477,6 +2904,7 @@ function CandidateOnboarding() {
                       className="sr-only"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
+                        e.target.value = '';
                         if (file) handleResumeParse(file);
                       }}
                     />
@@ -2548,26 +2976,6 @@ function CandidateOnboarding() {
                     {extractedProfile.email && <p className="text-xs text-[hsl(var(--muted-foreground))]">📧 {extractedProfile.email}</p>}
                     {extractedProfile.phone && <p className="text-xs text-[hsl(var(--muted-foreground))]">📞 {extractedProfile.phone}</p>}
                     {extractedProfile.location && <p className="text-xs text-[hsl(var(--muted-foreground))]">📍 {extractedProfile.location}</p>}
-                  </div>
-
-                  {/* Editable fields */}
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="grid gap-2 text-xs font-semibold">
-                      Target Role
-                      <input
-                        value={extractedProfile.targetRole}
-                        onChange={e => { const u = { ...extractedProfile, targetRole: e.target.value }; setExtractedProfile(u); setProfile(u); }}
-                        className="h-11 rounded-lg border border-[hsl(var(--input))] bg-transparent px-3 text-sm font-normal"
-                      />
-                    </label>
-                    <label className="grid gap-2 text-xs font-semibold">
-                      Target Company / Industry
-                      <input
-                        value={extractedProfile.targetCompany}
-                        onChange={e => { const u = { ...extractedProfile, targetCompany: e.target.value }; setExtractedProfile(u); setProfile(u); }}
-                        className="h-11 rounded-lg border border-[hsl(var(--input))] bg-transparent px-3 text-sm font-normal"
-                      />
-                    </label>
                   </div>
 
                   <label className="grid gap-2 text-xs font-semibold">
@@ -2657,8 +3065,88 @@ function CandidateOnboarding() {
                 </div>
 
                 <div className="mt-8 flex justify-end gap-3 border-t border-[hsl(var(--border))] pt-6">
-                  <Button onClick={() => setMode('reveal')} className="min-w-40">
-                    Generate My Match <ArrowRight size={15} />
+                  <Button onClick={() => setUploadStage('target')} className="min-w-40">
+                    Next <ArrowRight size={15} />
+                  </Button>
+                </div>
+              </section>
+            )}
+
+            {/* Step 2: Target Company and Target Job Profile */}
+            {uploadStage === 'target' && (
+              <section className="surface rounded-2xl p-6 sm:p-8">
+                <div className="mb-6 flex items-center justify-between border-b border-[hsl(var(--border))] pb-4">
+                  <div>
+                    <p className="eyebrow text-[hsl(var(--primary))]">Step 2 of 2 · Career Goals</p>
+                    <h2 className="mt-1 font-display text-2xl font-semibold">Target Job Profile &amp; Company</h2>
+                    <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
+                      Specify the role and company you are targeting to personalize your talent profile.
+                    </p>
+                  </div>
+                  <Badge tone="good"><Sparkles size={11} className="mr-1" /> Final Step</Badge>
+                </div>
+
+                <div className="space-y-5">
+                  <label className="grid gap-2 text-xs font-semibold">
+                    Target Job Profile / Role <span className="text-[hsl(var(--destructive))]">*</span>
+                    <input
+                      value={profile.targetRole || ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setProfile(prev => ({ ...prev, targetRole: val }));
+                        if (extractedProfile) setExtractedProfile(prev => prev ? ({ ...prev, targetRole: val }) : null);
+                      }}
+                      placeholder="e.g. Software Development Engineer, Full Stack Developer, Data Analyst..."
+                      className="h-11 rounded-lg border border-[hsl(var(--input))] bg-transparent px-3 text-sm font-normal"
+                    />
+                  </label>
+
+                  <label className="grid gap-2 text-xs font-semibold">
+                    Target Company <span className="text-[hsl(var(--destructive))]">*</span>
+                    <input
+                      value={profile.targetCompany || ''}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setProfile(prev => ({ ...prev, targetCompany: val }));
+                        if (extractedProfile) setExtractedProfile(prev => prev ? ({ ...prev, targetCompany: val }) : null);
+                      }}
+                      placeholder="e.g. SAP Labs India, Google, Microsoft, Amazon..."
+                      className="h-11 rounded-lg border border-[hsl(var(--input))] bg-transparent px-3 text-sm font-normal"
+                    />
+                  </label>
+
+                  <label className="grid gap-2 text-xs font-semibold">
+                    Preferred Work Mode
+                    <select
+                      value={profile.workMode || 'Hybrid'}
+                      onChange={e => {
+                        const val = e.target.value as 'Hybrid' | 'Remote' | 'On-site';
+                        setProfile(prev => ({ ...prev, workMode: val }));
+                        if (extractedProfile) setExtractedProfile(prev => prev ? ({ ...prev, workMode: val }) : null);
+                      }}
+                      className="h-11 rounded-lg border border-[hsl(var(--input))] bg-[hsl(var(--card))] px-3 text-sm font-normal"
+                    >
+                      <option value="Hybrid">Hybrid</option>
+                      <option value="Remote">Remote</option>
+                      <option value="On-site">On-site</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div className="mt-8 flex items-center justify-between border-t border-[hsl(var(--border))] pt-6">
+                  <Button onClick={() => setUploadStage('review')} variant="outline">
+                    <ArrowLeft size={15} /> Back
+                  </Button>
+                  <Button onClick={finishOnboarding} disabled={loading} className="min-w-44">
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <RefreshCcw size={14} className="animate-spin" /> Generating Profile…
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        Generate My Profile <ArrowRight size={15} />
+                      </span>
+                    )}
                   </Button>
                 </div>
               </section>
@@ -2877,49 +3365,14 @@ function CandidateOnboarding() {
                   </div>
                   <div className="mt-8 flex gap-3">
                     <Button onClick={() => setFormStep(2)} variant="outline"><ArrowLeft size={15} /> Back</Button>
-                    <Button onClick={() => setMode('reveal')}>Generate My Signal <ArrowRight size={15} /></Button>
+                    <Button onClick={finishOnboarding} disabled={loading}>{loading ? 'Generating Profile…' : 'Generate My Profile'} <ArrowRight size={15} /></Button>
                   </div>
                 </div>
               )}
             </section>
           </div>
         )}
-
-        {/* Unified Reveal Screen */}
-        {mode === 'reveal' && (
-          <section className="surface rounded-2xl p-6 sm:p-10 text-center">
-            <Badge tone="good"><CheckCircle2 size={13} className="mr-1" /> SAP Talent Intelligence Hub Certified</Badge>
-            <h1 className="mt-4 font-display text-4xl">Your verified signal is ready.</h1>
-            <p className="mt-3 max-w-md mx-auto text-sm text-[hsl(var(--muted-foreground))]">
-              We matched your capabilities against open roles at {profile.targetCompany}.
-            </p>
-
-            <div className="mt-8 mx-auto max-w-md rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] text-left shadow-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-[hsl(var(--accent))]">Top Match</p>
-                  <h3 className="font-display text-2xl font-semibold">{profile.targetRole}</h3>
-                  <p className="text-xs text-[hsl(var(--sidebar-foreground))]/60">{profile.targetCompany} · Hybrid</p>
-                </div>
-                <Score value={84} size="lg" />
-              </div>
-
-              <div className="mt-6 border-t border-[hsl(var(--sidebar-foreground))]/15 pt-4 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-[hsl(var(--sidebar-foreground))]/50">Evaluation</span>
-                  <p className="font-semibold text-[#86efac]">100% Skills-First</p>
-                </div>
-                <div>
-                  <span className="text-[hsl(var(--sidebar-foreground))]/50">Projected Bridge</span>
-                  <p className="font-semibold text-[hsl(var(--accent))]">91% in 3 Weeks</p>
-                </div>
-              </div>
-            </div>
-
-            <Button onClick={finishOnboarding} disabled={loading} size="lg" className="mt-8 min-w-52">
-              {loading ? 'Entering Workspace…' : 'Open My Workspace'} <ArrowRight size={16} />
-            </Button>
-          </section>
+          </>
         )}
       </main>
     </div>
@@ -2941,7 +3394,29 @@ function CandidateJobDetail() {
 
 function SkillGap() {
   const p = useProduct();
-  return <WorkspaceShell role="candidate"><PageTitle eyebrow="Skill bridge" title="A small bridge to a real opportunity." description="We found two high-value signals for your Product Operations Lead match. This is a 3-week path, not a reinvention." /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6 sm:p-8"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Target role · SAP Labs</p><h2 className="mt-2 font-display text-3xl">84% <span className="font-sans text-base text-[hsl(var(--muted-foreground))]">today</span> → <span className="text-[hsl(var(--primary))]">91%</span></h2></div><Badge tone="good"><TrendingUp size={13} className="mr-1" /> High leverage</Badge></div><div className="mt-8 space-y-5"><div className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#f8e6cf] text-xs font-semibold text-[#925d26]">01</span><h3 className="font-semibold">SQL for decision makers</h3></div><p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Your operations evidence is strong. This signal helps you speak to the data layer behind it.</p></div><Badge tone={p.completedLearning ? 'good' : 'warm'}>{p.completedLearning ? 'Complete' : '+4 fit'}</Badge></div>{!p.completedLearning && <Button onClick={() => { p.setCompletedLearning(true); p.setFit(91); p.notify('Skill bridge complete — your fit moved to 91%.'); }} data-testid="button-complete-skill-bridge" className="mt-5"><CheckCircle2 size={15} /> Mark module complete</Button>}</div><div className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between"><div><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#e1f0ea] text-xs font-semibold text-[hsl(var(--primary))]">02</span><h3 className="font-semibold">Influence without authority</h3></div><p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Turn your cross-team experience into language that travels across a new org.</p></div><Badge tone="quiet">Week 2</Badge></div></div><div className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between"><div><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[hsl(var(--muted))] text-xs font-semibold">03</span><h3 className="font-semibold">Tell your return story</h3></div><p className="mt-3 text-sm leading-6 text-[hsl(var(--muted-foreground))]">A practical rehearsal for the question behind every question.</p></div><Badge tone="quiet">Week 3</Badge></div></div></div></section><aside className="space-y-5"><div className="surface rounded-2xl p-6"><p className="eyebrow">Path progress</p><div className="mt-4 flex items-end justify-between"><span className="font-data text-3xl">{p.completedLearning ? '33' : '0'}%</span><span className="text-sm text-[hsl(var(--muted-foreground))]">1 of 3 weeks</span></div><Progress value={p.completedLearning ? 33 : 0} color="bg-[hsl(var(--accent))]" /><div className="mt-5 grid gap-3 text-sm"><div className="flex items-center gap-2"><CheckCircle2 size={15} className={p.completedLearning ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'} /> Evidence reviewed</div><div className="flex items-center gap-2"><Clock3 size={15} /> 4h 20m this week</div><div className="flex items-center gap-2"><Target size={15} /> Role-specific outcome</div></div></div><div className="rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))]"><Sparkles size={19} className="text-[hsl(var(--accent))]" /><p className="mt-4 font-display text-2xl">The goal is not to catch up.</p><p className="mt-2 text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/60">It is to make the capability you already have easier to see.</p></div></aside></div></WorkspaceShell>;
+  const match = p.latestMatch;
+  const targetRole = p.profile.targetRole || match?.jobTitle || "Product Operations Lead";
+  const targetCompany = p.profile.targetCompany || match?.company || "SAP Labs";
+  const currentFit = p.fit || match?.overallFitScore || 84;
+  const projectedFit = match?.threeWeekBoostProjected || 91;
+
+  const defaultModules = [
+    { week: 1, title: 'SQL & Relational Data Modeling for Enterprise Decision Makers', competencyGained: 'SQL Analytics & Data Insights', hoursRequired: 5, courseUrl: 'https://learning.sap.com/learning-journeys/explore-sap-hana-cloud-database' },
+    { week: 2, title: 'Cross-Functional Operating Models & Stakeholder Alignment', competencyGained: 'Cross-Functional Leadership', hoursRequired: 4, courseUrl: 'https://learning.sap.com/learning-journeys/discover-sap-activate-methodology' },
+    { week: 3, title: 'Enterprise Product Strategy & Agile Execution (SAP Activate)', competencyGained: 'Agile Governance', hoursRequired: 5, courseUrl: 'https://learning.sap.com' }
+  ];
+
+  const modulesToDisplay = (Array.isArray(match?.sapLearningHubModules) && match.sapLearningHubModules.length > 0)
+    ? match.sapLearningHubModules
+    : defaultModules;
+
+  return <WorkspaceShell role="candidate"><PageTitle eyebrow="SAP Skill Bridge" title="A personalized bridge to your target role." description={`Curated by the SAP Inclusive Matching Agent for ${targetRole} at ${targetCompany}. Zero penalty for your career break — purely focused on capability acceleration.`} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6 sm:p-8"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Target role · {targetCompany}</p><h2 className="mt-2 font-display text-3xl">{currentFit}% <span className="font-sans text-base text-[hsl(var(--muted-foreground))]">today</span> → <span className="text-[hsl(var(--primary))]">{projectedFit}%</span></h2></div><Badge tone="good"><TrendingUp size={13} className="mr-1" /> High leverage</Badge></div><div className="mt-8 space-y-5">{modulesToDisplay.map((m: any, idx: number) => {
+    const isWeek1 = idx === 0;
+    const isComplete = isWeek1 && p.completedLearning;
+    const bgStyles = ['bg-[#f8e6cf] text-[#925d26]', 'bg-[#e1f0ea] text-[hsl(var(--primary))]', 'bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]'];
+
+    return <div key={idx} className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ${bgStyles[idx % 3]}`}>0{m.week || idx + 1}</span><h3 className="font-semibold">{m.title}</h3></div><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Competency: <span className="font-medium text-[hsl(var(--foreground))]">{m.competencyGained}</span> · {m.hoursRequired || 5}h on SAP Learning Hub.</p></div><Badge tone={isComplete ? 'good' : (isWeek1 ? 'warm' : 'quiet')}>{isComplete ? 'Complete' : (isWeek1 ? `+${projectedFit - currentFit} fit` : `Week ${m.week || idx + 1}`)}</Badge></div>{isWeek1 && !p.completedLearning && <div className="mt-4 flex flex-wrap items-center gap-3"><Button onClick={() => { p.setCompletedLearning(true); p.setFit(projectedFit); p.notify(`Skill bridge complete — your fit moved to ${projectedFit}%.`); }} data-testid="button-complete-skill-bridge"><CheckCircle2 size={15} /> Mark module complete</Button><a href={m.courseUrl || 'https://learning.sap.com'} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-[hsl(var(--border))] px-3 text-xs font-semibold hover:bg-[hsl(var(--muted))]">Open on SAP Learning Hub ↗</a></div>}</div>;
+  })}</div></section><aside className="space-y-5"><div className="surface rounded-2xl p-6"><p className="eyebrow">Path progress</p><div className="mt-4 flex items-end justify-between"><span className="font-data text-3xl">{p.completedLearning ? '33' : '0'}%</span><span className="text-sm text-[hsl(var(--muted-foreground))]">1 of 3 weeks</span></div><Progress value={p.completedLearning ? 33 : 0} color="bg-[hsl(var(--accent))]" /><div className="mt-5 grid gap-3 text-sm"><div className="flex items-center gap-2"><CheckCircle2 size={15} className={p.completedLearning ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'} /> Evidence reviewed</div><div className="flex items-center gap-2"><Clock3 size={15} /> {modulesToDisplay[0]?.hoursRequired || 5}h this week</div><div className="flex items-center gap-2"><Target size={15} /> Role-specific outcome</div></div></div><div className="rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))]"><Sparkles size={19} className="text-[hsl(var(--accent))]" /><p className="mt-4 font-display text-2xl">The goal is not to catch up.</p><p className="mt-2 text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/60">It is to make the capability you already have easier to see.</p></div></aside></div></WorkspaceShell>;
 }
 function Learning() {
   const p = useProduct(); const [filter, setFilter] = useState('All');
@@ -2951,209 +3426,628 @@ function Applications() {
   const p = useProduct(); const items = p.applications.map(id => jobs.find(j => j.id === id)).filter(Boolean) as Job[];
   return <WorkspaceShell role="candidate"><PageTitle eyebrow="Applications" title="Keep the momentum visible." description="A clear place for every conversation, decision, and next action." action={<Link href="/candidate/jobs" data-testid="link-find-more-roles" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]"><Plus size={15} className="mr-2" /> Find another role</Link>} />{items.length ? <div className="grid gap-4">{items.map((job, i) => <div key={job.id} className="surface flex flex-wrap items-center justify-between gap-5 rounded-2xl p-5"><div className="flex items-center gap-4"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"><Building2 size={19} /></div><div><h3 className="font-semibold">{job.title}</h3><p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{job.company} · Applied {i === 0 ? 'today' : '8 days ago'}</p></div></div><div className="flex items-center gap-5"><div className="hidden text-right sm:block"><p className="text-xs text-[hsl(var(--muted-foreground))]">Next action</p><p className="mt-1 text-sm font-semibold">{i === 0 ? 'Prepare for review' : 'Waiting for team'}</p></div><Badge tone={i === 0 ? 'good' : 'quiet'}>{i === 0 ? 'In review' : 'Applied'}</Badge><ChevronRight size={17} className="text-[hsl(var(--muted-foreground))]" /></div></div>)}</div> : <EmptyState icon={Inbox} title="Your application story starts here." body="When a role feels right, apply with your ReturnPath profile and keep every next step in one place." action={<Link href="/candidate/jobs" data-testid="link-empty-find-role" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Explore roles</Link>} />}</WorkspaceShell>;
 }
+function generateResumeHtml(data: {
+  name: string;
+  targetRole?: string;
+  targetCompany?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  summary?: string;
+  readinessRating?: number;
+  skills?: string[];
+  experience?: Array<{ role: string; company: string; duration: string; highlights: string[] }>;
+  projects?: Array<{ title: string; techStack: string[]; description: string; impact?: string }>;
+  education?: Array<{ degree: string; institution: string; year: string; score?: string }>;
+  certifications?: Array<{ name: string; issuer: string; year?: string }>;
+  careerBreakYears?: number;
+  breakContext?: string;
+}): string {
+  const safeName = data.name || 'Candidate';
+  const safeRole = data.targetRole || '';
+  const safeEmail = data.email || '';
+  const safePhone = data.phone || '';
+  const safeLocation = data.location || '';
+  const safeSummary = data.summary || '';
+  const safeSkills = data.skills || [];
+  const safeExp = data.experience || [];
+  const safeProj = data.projects || [];
+  const safeEdu = data.education || [];
+  const safeCerts = data.certifications || [];
+  const hasBreak = (data.careerBreakYears != null && data.careerBreakYears > 0) || Boolean(data.breakContext && data.breakContext.trim().length > 0);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${safeName} - Resume</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #0f172a;
+      background: #f1f5f9;
+      padding: 36px 16px;
+      line-height: 1.5;
+    }
+    .toolbar {
+      max-width: 820px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .btn-print {
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-print:hover {
+      background: #4338ca;
+    }
+    .sheet {
+      max-width: 820px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 48px 52px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+    }
+    .name {
+      font-size: 30px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.03em;
+    }
+    .role {
+      font-size: 17px;
+      font-weight: 600;
+      color: #4f46e5;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 12.5px;
+      color: #475569;
+      font-weight: 500;
+    }
+    .section {
+      margin-bottom: 22px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0f172a;
+      border-bottom: 1.5px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+    }
+    .summary {
+      font-size: 13px;
+      color: #334155;
+      line-height: 1.65;
+    }
+    .skills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .skill-pill {
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 3px 9px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .entry {
+      margin-bottom: 14px;
+    }
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 2px;
+    }
+    .entry-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .entry-date {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      font-family: 'DM Mono', monospace;
+    }
+    .entry-sub {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #4f46e5;
+      margin-bottom: 4px;
+    }
+    .bullets {
+      list-style-type: disc;
+      padding-left: 18px;
+      font-size: 12.5px;
+      color: #334155;
+      line-height: 1.55;
+    }
+    .bullets li {
+      margin-bottom: 3px;
+    }
+    .break-note {
+      background: #f8fafc;
+      border-left: 3px solid #6366f1;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 14px;
+    }
+    .break-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    .break-text {
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .edu-item, .cert-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      margin-bottom: 6px;
+    }
+    .edu-degree {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .edu-school {
+      color: #64748b;
+    }
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .sheet {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        max-width: 100%;
+        border-radius: 0;
+      }
+      @page {
+        margin: 14mm 16mm;
+        size: A4 portrait;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <div class="sheet">
+    <header class="header">
+      <h1 class="name">${safeName}</h1>
+      ${safeRole ? `<p class="role">${safeRole} ${data.targetCompany ? `· ${data.targetCompany}` : ''}</p>` : ''}
+      <div class="contact-row">
+        ${safeEmail ? `<span>✉️ ${safeEmail}</span>` : ''}
+        ${safePhone ? `<span>📞 ${safePhone}</span>` : ''}
+        ${safeLocation ? `<span>📍 ${safeLocation}</span>` : ''}
+      </div>
+    </header>
+
+    ${safeSummary ? `
+    <section class="section">
+      <h2 class="section-title">Professional Summary</h2>
+      <p class="summary">${safeSummary}</p>
+    </section>
+    ` : ''}
+
+    ${safeSkills.length > 0 ? `
+    <section class="section">
+      <h2 class="section-title">Core Competencies & Skills</h2>
+      <div class="skills-wrap">
+        ${safeSkills.map(s => `<span class="skill-pill">${s}</span>`).join('')}
+      </div>
+    </section>
+    ` : ''}
+
+    ${hasBreak ? `
+    <section class="section">
+      <h2 class="section-title">Career Transition & Upskilling</h2>
+      <div class="break-note">
+        <p class="break-title">Career Break${data.careerBreakYears && data.careerBreakYears > 0 ? ` (${data.careerBreakYears} ${data.careerBreakYears === 1 ? 'Year' : 'Years'})` : ''}</p>
+        ${data.breakContext ? `<p class="break-text">${data.breakContext}</p>` : ''}
+      </div>
+    </section>
+    ` : ''}
+
+    ${safeExp.length > 0 ? `
+    <section class="section">
+      <h2 class="section-title">Professional Experience</h2>
+      ${safeExp.map(exp => `
+        <div class="entry">
+          <div class="entry-header">
+            <div class="entry-title">${exp.role}</div>
+            ${exp.duration ? `<div class="entry-date">${exp.duration}</div>` : ''}
+          </div>
+          ${exp.company ? `<div class="entry-sub">${exp.company}</div>` : ''}
+          ${exp.highlights && exp.highlights.length > 0 ? `
+            <ul class="bullets">
+              ${exp.highlights.map(h => `<li>${h}</li>`).join('')}
+            </ul>
+          ` : ''}
+        </div>
+      `).join('')}
+    </section>
+    ` : ''}
+
+    ${safeProj.length > 0 ? `
+    <section class="section">
+      <h2 class="section-title">Projects & Key Work</h2>
+      ${safeProj.map(proj => `
+        <div class="entry">
+          <div class="entry-header">
+            <div class="entry-title">${proj.title}</div>
+            ${proj.techStack && proj.techStack.length > 0 ? `<div class="entry-date">${proj.techStack.join(' · ')}</div>` : ''}
+          </div>
+          ${proj.description ? `<p class="summary" style="margin-bottom: 4px;">${proj.description}</p>` : ''}
+          ${proj.impact ? `<p class="entry-sub" style="color: #059669; font-size: 12px;">★ Impact: ${proj.impact}</p>` : ''}
+        </div>
+      `).join('')}
+    </section>
+    ` : ''}
+
+    ${safeEdu.length > 0 ? `
+    <section class="section">
+      <h2 class="section-title">Education & Credentials</h2>
+      ${safeEdu.map(edu => `
+        <div class="edu-item">
+          <div>
+            <span class="edu-degree">${edu.degree}</span> ${edu.institution ? `· <span class="edu-school">${edu.institution}</span>` : ''}
+            ${edu.score ? `<span style="color: #4f46e5; font-size: 11px; margin-left: 6px;">(${edu.score})</span>` : ''}
+          </div>
+          ${edu.year ? `<div class="entry-date">${edu.year}</div>` : ''}
+        </div>
+      `).join('')}
+    </section>
+    ` : ''}
+
+    ${safeCerts.length > 0 ? `
+    <section class="section">
+      <h2 class="section-title">Certifications & Training</h2>
+      ${safeCerts.map(cert => `
+        <div class="cert-item">
+          <div>
+            <span class="edu-degree">${cert.name}</span> ${cert.issuer ? `· <span class="edu-school">${cert.issuer}</span>` : ''}
+          </div>
+          ${cert.year ? `<div class="entry-date">${cert.year}</div>` : ''}
+        </div>
+      `).join('')}
+    </section>
+    ` : ''}
+  </div>
+</body>
+</html>`;
+}
+
 function Resume() {
   const p = useProduct();
   const { user } = useUser();
-  const [analyzing, setAnalyzing] = useState(false);
-  const [extractedData, setExtractedData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
 
-  async function runSkillsExtraction(fileOrEvent?: any) {
-    setAnalyzing(true);
-    setError(null);
-    p.setAnalysis('analyzing');
-    try {
-      let textToSend = '';
-      let fileObj: File | null = null;
-
-      if (fileOrEvent?.target?.files?.[0]) {
-        fileObj = fileOrEvent.target.files[0];
-      } else if (fileOrEvent instanceof File) {
-        fileObj = fileOrEvent;
-      }
-
-      let fileBase64 = '';
-      if (fileObj) {
-        try {
-          textToSend = await extractTextFromFile(fileObj);
-        } catch {}
-        try {
-          const buffer = await fileObj.arrayBuffer();
-          const bytes = new Uint8Array(buffer);
-          let binary = '';
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i]);
+  // Sync latest candidate profile from database on mount if needed
+  useEffect(() => {
+    let mounted = true;
+    if (!p.profile.name || (p.profile.skills && p.profile.skills.length === 0)) {
+      fetch('/api/candidate/profile')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!mounted) return;
+          if (data?.profile && (data.profile.name || (data.profile.skills && data.profile.skills.length > 0))) {
+            p.updateProfile(data.profile);
           }
-          fileBase64 = btoa(binary);
-        } catch {}
-      } else {
-        textToSend = p.profile.summary || (p.profile.skills.length > 0 ? `${p.profile.name} - ${p.profile.targetRole} with skills in ${p.profile.skills.join(', ')}` : '');
-      }
-
-      if ((!textToSend || textToSend.trim().length < 5) && !fileBase64) {
-        const msg = 'Please upload a resume file (PDF, DOCX, TXT) to extract your capabilities.';
-        setError(msg);
-        p.notify(msg);
-        setAnalyzing(false);
-        p.setAnalysis('idle');
-        return;
-      }
-
-      const res = await fetch('/api/candidate/onboarding/resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: textToSend,
-          fileBase64,
-          filename: fileObj?.name || 'resume.pdf',
-          userId: user?.id
         })
-      });
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok || (json && json.success === false)) {
-        const errorMsg = json?.error || `Extraction failed with status ${res.status}`;
-        setError(errorMsg);
-        p.notify(`Error: ${errorMsg}`);
-        setAnalyzing(false);
-        p.setAnalysis('idle');
-        return;
-      }
-
-      if (json?.data) {
-        const d = json.data;
-        setExtractedData(d);
-        await p.updateProfile({
-          name: d.candidateName || p.profile.name,
-          email: d.email || p.profile.email,
-          phone: d.phone || p.profile.phone,
-          location: d.location || p.profile.location,
-          summary: d.summary || p.profile.summary,
-          targetRole: d.targetRole || p.profile.targetRole,
-          targetCompany: d.targetCompany || p.profile.targetCompany,
-          skills: d.extractedSkills ? d.extractedSkills.map((s: any) => typeof s === 'string' ? s : s.name) : p.profile.skills,
-          education: d.education || p.profile.education,
-          projects: d.projects || profile.projects,
-          experience: d.experience || profile.experience,
-          certifications: d.certifications || profile.certifications,
-          achievements: d.achievements || profile.achievements,
-          breakContext: d.breakContext || profile.breakContext,
-          careerBreakYears: d.careerBreakYears ?? profile.careerBreakYears,
-          readinessRating: d.readinessRating || 88
-        });
-        p.notify('Resume analyzed and verified in SAP Talent Intelligence Hub.');
-      }
-      p.setAnalysis('ready');
-    } catch (err: any) {
-      const msg = err.message || 'An error occurred during resume extraction.';
-      setError(msg);
-      p.notify(`Error: ${msg}`);
-      p.setAnalysis('idle');
-    } finally {
-      setAnalyzing(false);
+        .catch(err => console.warn('Could not sync candidate profile in Resume:', err));
     }
-  }
+    return () => { mounted = false; };
+  }, []);
 
-  const displayName = extractedData?.candidateName || p.profile.name || user?.fullName || 'Candidate';
-  const displaySummary = extractedData?.summary || p.profile.summary || '';
-  const skillsList = extractedData?.extractedSkills || (p.profile.skills.length > 0 ? p.profile.skills.map((s, idx) => ({ name: s, verifiedScore: 90 - idx * 2, evidence: 'Demonstrated capability' })) : []);
+  const profile = p.profile;
+  const candidateName = profile.name?.trim() || user?.fullName || user?.firstName || 'Candidate';
+  const targetRole = profile.targetRole?.trim() || '';
+  const targetCompany = profile.targetCompany?.trim() || '';
+  const email = profile.email?.trim() || user?.primaryEmailAddress?.emailAddress || '';
+  const phone = profile.phone?.trim() || '';
+  const location = profile.location?.trim() || '';
+  const summary = profile.summary?.trim() || '';
+  const skills = profile.skills || [];
+  const experience = profile.experience || [];
+  const projects = profile.projects || [];
+  const education = profile.education || [];
+  const certifications = profile.certifications || [];
+  const careerBreakYears = profile.careerBreakYears || 0;
+  const breakContext = profile.breakContext?.trim() || '';
+
+  const hasBreak = (careerBreakYears > 0) || (breakContext.length > 0);
+
+  const handleExport = () => {
+    const htmlContent = generateResumeHtml({
+      name: candidateName,
+      targetRole,
+      targetCompany,
+      email,
+      phone,
+      location,
+      summary,
+      readinessRating: profile.readinessRating,
+      skills,
+      experience,
+      projects,
+      education,
+      certifications,
+      careerBreakYears,
+      breakContext
+    });
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const sanitizedName = candidateName.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Candidate';
+    const fileName = `${sanitizedName}_Resume.html`;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    p.notify(`Resume exported successfully as ${fileName}!`);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
     <WorkspaceShell role="candidate">
       <PageTitle
-        eyebrow="SAP Talent Intelligence Hub"
-        title="Make the evidence easy to find."
-        description="A resume should not make a recruiter guess what you can do."
+        eyebrow="Resume Studio"
+        title="Candidate Resume"
+        description="Formatted view of your candidate profile. When you click export, your updated resume will download directly."
         action={
-          <Button onClick={() => runSkillsExtraction()} data-testid="button-analyze-resume" variant="outline" disabled={analyzing}>
-            <Sparkles size={15} /> {analyzing ? 'Extracting capabilities…' : 'Analyse with SAP Skills Agent'}
-          </Button>
-        }
-      />
-      <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
-        <section className="surface rounded-2xl p-6">
-          <p className="eyebrow">Skills Discovery Agent</p>
-
-          {error && (
-            <div className="mt-4 flex items-start gap-3 rounded-xl border border-[hsl(var(--destructive))]/40 bg-[hsl(var(--destructive))]/10 p-3.5 text-xs text-[hsl(var(--destructive))]">
-              <AlertCircle size={16} className="mt-0.5 shrink-0 text-[hsl(var(--destructive))]" />
-              <div className="flex-1">
-                <p className="font-semibold">Extraction Failed</p>
-                <p className="mt-0.5 leading-relaxed">{error}</p>
-              </div>
-              <button type="button" onClick={() => setError(null)} className="font-bold opacity-70 hover:opacity-100">✕</button>
-            </div>
-          )}
-
-          <div className="mt-5 rounded-xl border border-dashed border-[hsl(var(--primary))]/45 bg-[#e1f0ea] p-7 text-center">
-            <Upload size={24} className="mx-auto text-[hsl(var(--primary))]" />
-            <p className="mt-4 font-semibold">{analyzing ? 'Extracting capability signals…' : p.analysis === 'ready' ? 'Capability extraction complete' : 'Drop your resume here'}</p>
-            <p className="mt-2 text-xs text-[hsl(var(--muted-foreground))]">Analyzed by SAP Talent Intelligence Hub Skills Ontology</p>
-            <label className="mt-5 inline-flex min-h-10 cursor-pointer items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))] shadow hover:opacity-95">
-              <input
-                type="file"
-                data-testid="input-resume-upload"
-                className="sr-only"
-                accept=".pdf,.doc,.docx,.txt"
-                onChange={(e) => runSkillsExtraction(e)}
-              />
-              Upload and Analyze
-            </label>
-          </div>
-          {p.analysis === 'ready' && (
-            <div className="mt-5 rounded-xl bg-[hsl(var(--muted))] p-4 text-sm">
-              <div className="flex items-center gap-2 font-semibold text-[hsl(var(--primary))]">
-                <CheckCircle2 size={16} /> Verified Capabilities Extracted
-              </div>
-              <p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">
-                Capabilities verified and mapped directly into SAP Talent Intelligence Hub.
-              </p>
-            </div>
-          )}
-        </section>
-        <section className="surface rounded-2xl p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="eyebrow">Verified Growth Portfolio</p>
-              <h2 className="mt-2 font-display text-2xl">{displayName}</h2>
-            </div>
-            <Button onClick={() => window.alert('Skills portfolio exported into SAP Talent Intelligence Hub format.')} data-testid="button-export-resume" variant="ghost">
-              <Download size={16} /> Export
+          <div className="no-print flex flex-wrap items-center gap-2.5">
+            <Button onClick={handleExport} data-testid="button-export-resume">
+              <Download size={15} /> Export Resume
+            </Button>
+            <Button onClick={handlePrint} variant="outline" data-testid="button-print-resume">
+              <FileText size={15} /> Print / Save PDF
             </Button>
           </div>
-          {skillsList.length > 0 || displaySummary ? (
-            <div className="mt-6 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-6">
-              <p className="font-data text-xs text-[hsl(var(--primary))] uppercase">
-                {p.profile.targetRole || 'CAPABILITY PORTFOLIO'} · VERIFIED TALENT PASSPORT
+        }
+      />
+
+      {/* Full Resume Document Sheet */}
+      <div className="mx-auto max-w-4xl pb-12">
+        <article
+          id="resume-document-sheet"
+          className="rounded-2xl border border-slate-200/90 bg-white p-8 text-slate-900 shadow-2xl sm:p-12"
+          style={{ color: '#0f172a', background: '#ffffff' }}
+        >
+          {/* Header */}
+          <header className="border-b-2 border-slate-900 pb-6">
+            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900">
+              {candidateName}
+            </h1>
+            {targetRole && (
+              <p className="mt-1 text-lg font-bold text-indigo-600">
+                {targetRole} {targetCompany ? `· ${targetCompany}` : ''}
               </p>
-              {displaySummary && (
-                <p className="mt-4 text-sm leading-6">
-                  {displaySummary} {extractedData?.readinessRating || p.profile.readinessRating ? `Verified readiness rating: ${extractedData?.readinessRating || p.profile.readinessRating}%.` : ''}
-                </p>
-              )}
-              <div className="my-5 border-t border-[hsl(var(--border))]" />
-              <p className="text-sm font-semibold">Extracted Evidence Highlights</p>
-              <ul className="mt-3 grid gap-2 text-sm text-[hsl(var(--muted-foreground))]">
-                {skillsList.slice(0, 6).map((s: any, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-[hsl(var(--primary))] font-semibold">•</span>
-                    <span>
-                      <strong className="text-[hsl(var(--foreground))]">{typeof s === 'string' ? s : s.name}</strong>
-                      {s.verifiedScore ? ` (Verified Score: ${s.verifiedScore}%)` : ''}
-                      {s.evidence ? ` — ${s.evidence}` : ''}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-y-1.5 gap-x-4 text-xs font-medium text-slate-600">
+              {email && <span>✉️ {email}</span>}
+              {phone && <span>📞 {phone}</span>}
+              {location && <span>📍 {location}</span>}
             </div>
-          ) : (
-            <div className="mt-6 rounded-xl border border-dashed border-[hsl(var(--border))] p-8 text-center text-xs text-[hsl(var(--muted-foreground))]">
-              <Upload size={24} className="mx-auto text-[hsl(var(--muted-foreground))]/60 mb-2" />
-              <p className="font-semibold text-sm text-[hsl(var(--foreground))]">No resume analyzed yet</p>
-              <p className="mt-1">Upload your resume on the left to extract your skills, achievements, and verified readiness score.</p>
+          </header>
+
+          {/* Executive Summary - ONLY if candidate provided one */}
+          {summary && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Professional Summary
+              </h2>
+              <p className="mt-2.5 text-sm leading-relaxed text-slate-700">
+                {summary}
+              </p>
+            </section>
+          )}
+
+          {/* Core Competencies & Skills - ONLY candidate's actual skills */}
+          {skills.length > 0 && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Core Competencies & Skills
+              </h2>
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {skills.map((skill, idx) => (
+                  <span
+                    key={idx}
+                    className="rounded-md border border-slate-300 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-800 shadow-2xs"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Strategic Career Transition / Break Note - ONLY if candidate actually has one */}
+          {hasBreak && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Career Transition & Upskilling
+              </h2>
+              <div className="mt-2.5 rounded-lg border-l-4 border-indigo-500 bg-indigo-50/60 p-3.5 text-xs text-indigo-950">
+                <p className="font-bold text-slate-900">
+                  Career Break{careerBreakYears > 0 ? ` (${careerBreakYears} ${careerBreakYears === 1 ? 'Year' : 'Years'})` : ''}
+                </p>
+                {breakContext && (
+                  <p className="mt-1 leading-relaxed text-slate-700">
+                    {breakContext}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Professional Experience - ONLY real candidate experience */}
+          {experience.length > 0 && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Professional Experience
+              </h2>
+              <div className="mt-3 space-y-4">
+                {experience.map((exp, idx) => (
+                  <div key={idx}>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-sm font-bold text-slate-900">{exp.role}</h3>
+                      {exp.duration && (
+                        <span className="font-mono text-xs font-semibold text-slate-500">{exp.duration}</span>
+                      )}
+                    </div>
+                    {exp.company && (
+                      <p className="text-xs font-bold text-indigo-600">{exp.company}</p>
+                    )}
+                    {exp.highlights && exp.highlights.length > 0 && (
+                      <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-relaxed text-slate-700">
+                        {exp.highlights.map((h, hIdx) => (
+                          <li key={hIdx}>{h}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Key Projects - ONLY real candidate projects */}
+          {projects.length > 0 && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Projects & Key Work
+              </h2>
+              <div className="mt-3 space-y-4">
+                {projects.map((proj, idx) => (
+                  <div key={idx} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3.5">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h3 className="text-sm font-bold text-slate-900">{proj.title}</h3>
+                      {proj.techStack && proj.techStack.length > 0 && (
+                        <span className="font-mono text-[11px] font-medium text-slate-500">
+                          {proj.techStack.join(' · ')}
+                        </span>
+                      )}
+                    </div>
+                    {proj.description && (
+                      <p className="mt-1.5 text-xs leading-relaxed text-slate-700">{proj.description}</p>
+                    )}
+                    {proj.impact && (
+                      <p className="mt-1.5 text-xs font-bold text-emerald-700">
+                        ★ Impact: {proj.impact}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Education - ONLY real candidate education */}
+          {education.length > 0 && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Education & Credentials
+              </h2>
+              <div className="mt-2.5 space-y-2">
+                {education.map((edu, idx) => (
+                  <div key={idx} className="flex flex-wrap items-baseline justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-slate-900">{edu.degree}</span>
+                      {edu.institution && (
+                        <span className="text-slate-600"> · {edu.institution}</span>
+                      )}
+                      {edu.score && (
+                        <span className="ml-2 font-medium text-indigo-600">({edu.score})</span>
+                      )}
+                    </div>
+                    {edu.year && (
+                      <span className="font-mono font-medium text-slate-500">{edu.year}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Certifications - ONLY real candidate certifications */}
+          {certifications.length > 0 && (
+            <section className="mt-6">
+              <h2 className="border-b border-slate-200 pb-1 text-xs font-extrabold uppercase tracking-widest text-slate-900">
+                Certifications & Training
+              </h2>
+              <div className="mt-2.5 space-y-2">
+                {certifications.map((cert, idx) => (
+                  <div key={idx} className="flex flex-wrap items-baseline justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-slate-900">{cert.name}</span>
+                      {cert.issuer && (
+                        <span className="text-slate-600"> · {cert.issuer}</span>
+                      )}
+                    </div>
+                    {cert.year && (
+                      <span className="font-mono font-medium text-slate-500">{cert.year}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* If the candidate profile has no details yet, show a clean helper note on-screen */}
+          {!summary && skills.length === 0 && experience.length === 0 && projects.length === 0 && education.length === 0 && (
+            <div className="no-print mt-6 rounded-xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-500">
+              <p className="font-semibold text-sm text-slate-800">Your profile details will appear here.</p>
+              <p className="mt-1">Add your skills, summary, or work history in <Link href="/candidate/profile" className="text-indigo-600 font-semibold underline">Edit Profile</Link> to view them on your resume.</p>
             </div>
           )}
-        </section>
+        </article>
       </div>
     </WorkspaceShell>
   );
@@ -3280,15 +4174,33 @@ function Assistant() {
   const p = useProduct();
   const { user } = useUser();
   const profile = p.profile;
+  const [profileLoading, setProfileLoading] = useState(false);
 
-  const candidateName = profile.name?.trim() || user?.fullName || user?.firstName || '';
+  // Actively fetch real candidate profile from backend database on mount
+  useEffect(() => {
+    let mounted = true;
+    setProfileLoading(true);
+    fetch('/api/candidate/profile')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (!mounted) return;
+        if (data?.profile && (data.profile.name || data.profile.targetRole || (data.profile.skills && data.profile.skills.length > 0))) {
+          p.updateProfile(data.profile);
+        }
+      })
+      .catch(err => console.warn('Could not fetch candidate profile on mount:', err))
+      .finally(() => {
+        if (mounted) setProfileLoading(false);
+      });
+    return () => { mounted = false; };
+  }, []);
 
-  const targetRole = profile.targetRole?.trim() || 'Product Operations Lead';
-  const targetCompany = profile.targetCompany?.trim() || 'SAP Labs';
-  const breakYears = profile.careerBreakYears ?? 3;
-  const breakDetails = profile.breakContext?.trim() || 'caregiving break';
-  const fitScore = profile.fit ?? 84;
-  const readinessRating = profile.readinessRating ?? 85;
+  const candidateName = profile.name?.trim() || user?.fullName || user?.firstName || 'Candidate';
+  const targetRole = profile.targetRole?.trim() || (profile.skills?.length ? 'Software Engineer' : 'Target Role');
+  const targetCompany = profile.targetCompany?.trim() || 'Target Employer';
+  const skillsList = (profile.skills && profile.skills.length > 0) ? profile.skills : [];
+  const fitScore = profile.fit || 85;
+  const readinessRating = profile.readinessRating || 88;
 
   const initialGreeting = useMemo(() => {
     return `### 👋 Welcome, **${candidateName}**!
@@ -3296,12 +4208,12 @@ function Assistant() {
 I am **SAP Joule**, your AI Career Co-Pilot grounded in the **SAP Talent Intelligence Hub**.
 
 ### 📊 Your Active Profile Intelligence
-- **Target Role**: **${targetRole}** at **${targetCompany}**
+- **Target Role**: **${targetRole}** ${targetCompany !== 'Target Employer' ? `at **${targetCompany}**` : ''}
 - **Verified Alignment**: **${fitScore}% Match** (Skills-first evaluation based on your demonstrated capabilities)
-- **Projected Readiness**: **92%+** upon completing recommended **SAP Learning Hub** modules.
+- **Top Verified Skills**: ${skillsList.length > 0 ? skillsList.slice(0, 5).join(', ') : 'Add skills or upload resume to view ontology signals'}
 
-How can I support your next step today? You can ask me for interview coaching, project impact storytelling, or tailored skill roadmaps.`;
-  }, [candidateName, targetRole, targetCompany, fitScore]);
+How can I support your career journey today? You can ask me for interview coaching, pitch formulation, or tailored skill gap roadmaps.`;
+  }, [candidateName, targetRole, targetCompany, fitScore, skillsList]);
 
   const [messages, setMessages] = useState<Array<{ role: 'assistant' | 'user'; content: string }>>([
     { role: 'assistant', content: initialGreeting }
@@ -3309,6 +4221,16 @@ How can I support your next step today? You can ask me for interview coaching, p
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync initial greeting when fresh profile loads
+  useEffect(() => {
+    setMessages(prev => {
+      if (prev.length === 1 && prev[0].role === 'assistant') {
+        return [{ role: 'assistant', content: initialGreeting }];
+      }
+      return prev;
+    });
+  }, [initialGreeting]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -3359,6 +4281,10 @@ How can I support your next step today? You can ask me for interview coaching, p
       if (data?.reply) {
         setMessages(m => [...m, { role: 'assistant', content: data.reply }]);
       }
+      // If backend returned refreshed DB profile, sync it to context
+      if (data?.profile && data.profile.name) {
+        p.updateProfile(data.profile);
+      }
     } catch (err: any) {
       const errMsg = err?.message || 'Network connection failed.';
       setMessages(m => [...m, {
@@ -3377,9 +4303,11 @@ How can I support your next step today? You can ask me for interview coaching, p
 
   const promptSuggestions = [
     `How do I pitch my experience for ${targetRole}?`,
-    `What are my top strengths for ${targetRole}?`,
-    `Simulate an interview question for ${targetRole}`,
-    `How does SAP Learning Hub help me reach 92% readiness?`
+    skillsList.length > 0
+      ? `What are my top strengths from my skills (${skillsList.slice(0, 2).join(', ')})?`
+      : `What are the core technical skills needed for ${targetRole}?`,
+    `Simulate a technical interview question for ${targetRole}`,
+    `What skills should I develop next for ${targetRole}?`
   ];
 
   return (
@@ -3387,7 +4315,7 @@ How can I support your next step today? You can ask me for interview coaching, p
       <PageTitle
         eyebrow="SAP Joule Career Assistant"
         title="Your Personalized Career Co-Pilot"
-        description="Grounded in your verified capabilities, learning goals, and SAP Talent Intelligence Hub profile."
+        description="Grounded in your real verified capabilities, learning goals, and SAP Talent Intelligence Hub profile."
         action={
           <Button
             onClick={handleReset}
@@ -3406,21 +4334,31 @@ How can I support your next step today? You can ask me for interview coaching, p
         <section className="surface flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[hsl(var(--primary))]/20 bg-[hsl(var(--primary))]/5 p-4 sm:px-6">
           <div className="flex flex-wrap items-center gap-2.5 text-xs">
             <span className="font-semibold text-[hsl(var(--primary))] flex items-center gap-1.5">
-              <Sparkles size={14} /> Grounded Profile:
+              <Sparkles size={14} /> Grounded in Real Profile:
             </span>
             <span className="rounded-md bg-[hsl(var(--card))] px-2.5 py-1 font-medium shadow-2xs border border-[hsl(var(--border))]">
               👤 {candidateName}
             </span>
             <span className="rounded-md bg-[hsl(var(--card))] px-2.5 py-1 font-medium shadow-2xs border border-[hsl(var(--border))]">
-              🎯 {targetRole} @ {targetCompany}
+              🎯 {targetRole} {targetCompany !== 'Target Employer' ? `@ ${targetCompany}` : ''}
             </span>
+            {skillsList.length > 0 && (
+              <span className="rounded-md bg-[hsl(var(--card))] px-2.5 py-1 font-medium shadow-2xs border border-[hsl(var(--border))]">
+                ⚡ {skillsList.length} Verified Skills
+              </span>
+            )}
             <span className="rounded-md bg-[#e1f0ea] text-[#23614e] px-2.5 py-1 font-semibold">
               <ShieldCheck size={12} className="inline mr-1" /> Skills-First Intelligence
             </span>
             <span className="rounded-md bg-[hsl(var(--card))] px-2.5 py-1 font-medium shadow-2xs border border-[hsl(var(--border))]">
-              ✨ {fitScore}% Match → 92% Bridge
+              ✨ {fitScore}% Match
             </span>
           </div>
+          {profileLoading && (
+            <span className="text-[11px] text-[hsl(var(--muted-foreground))] flex items-center gap-1">
+              <RefreshCcw size={11} className="animate-spin" /> Syncing DB Profile...
+            </span>
+          )}
         </section>
 
         {/* Chat Conversation Card */}
@@ -3471,7 +4409,7 @@ How can I support your next step today? You can ask me for interview coaching, p
                 </div>
                 {m.role === 'user' && (
                   <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-[hsl(var(--muted))] text-[hsl(var(--foreground))] text-xs font-bold mt-1">
-                    {candidateName.slice(0, 2).toUpperCase()}
+                    {candidateName.slice(0, 2).toUpperCase() || 'ME'}
                   </div>
                 )}
               </div>
@@ -3538,8 +4476,12 @@ How can I support your next step today? You can ask me for interview coaching, p
 
 
 function RecruiterHome() {
-  const p = useProduct(); usePageMeta('Recruiter overview', 'A human-reviewed intelligence workspace for hiring teams.');
-  return <WorkspaceShell role="recruiter"><PageTitle eyebrow="Tuesday, 14 October" title="Good morning, Alex." description="Your team can move quickly today without letting the score make the decision." action={<Link href="/recruiter/jobs/create" data-testid="link-create-job-home" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]"><Plus size={15} className="mr-2" /> Create a role</Link>} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] sm:p-8"><div className="flex flex-wrap items-start justify-between gap-5"><div><p className="eyebrow text-[hsl(var(--accent))]">Hiring signal</p><h2 className="mt-3 font-display text-3xl">Your shortlist is ready for judgment.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/60">12 candidates have verified skill evidence for Product Operations Lead. 4 are ready for a human review.</p></div><UsersRound size={30} className="text-[hsl(var(--accent))]" /></div><div className="mt-8 grid gap-3 border-t border-[hsl(var(--sidebar-foreground))]/15 pt-5 sm:grid-cols-3"><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Open roles</p><p className="mt-1 font-data text-xl">8</p></div><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Shortlist-ready</p><p className="mt-1 font-data text-xl">12</p></div><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Human reviewed</p><p className="mt-1 font-data text-xl text-[hsl(var(--accent))]">68%</p></div></div><Link href="/recruiter/shortlist" data-testid="link-review-shortlist-home" className="mt-7 inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--accent))] px-4 text-sm font-semibold text-[hsl(var(--foreground))]">Review shortlist <ArrowRight size={15} className="ml-2" /></Link></section><section className="surface rounded-2xl p-6"><div className="flex items-center justify-between"><div><p className="eyebrow">Fairness monitor</p><p className="mt-2 font-display text-2xl">Healthy with one watch</p></div><ShieldCheck size={23} className="text-[hsl(var(--primary))]" /></div><div className="mt-6 rounded-xl bg-[#e1f0ea] p-4"><div className="flex items-center gap-2 text-sm font-semibold text-[#23614e]"><CheckCircle2 size={16} /> Career breaks excluded from scoring</div><p className="mt-2 text-xs leading-5 text-[#23614e]/75">Fit signals use verified skills, role evidence, and stated preferences.</p></div><div className="mt-5 flex items-center justify-between text-sm"><span>Location signal variance</span><Badge tone="warm">Review</Badge></div><Link href="/recruiter/bias-audit" data-testid="link-view-fairness" className="mt-5 inline-flex items-center text-sm font-semibold text-[hsl(var(--primary))]">Open monitor <ArrowRight size={15} className="ml-2" /></Link></section></div><div className="mt-5 grid gap-5 lg:grid-cols-3"><section className="surface rounded-2xl p-6 lg:col-span-2"><div className="flex items-center justify-between"><div><p className="eyebrow">Recent activity</p><h2 className="mt-2 font-display text-2xl">Keep the conversation moving.</h2></div><Link href="/recruiter/candidates" data-testid="link-all-candidates" className="text-sm font-semibold text-[hsl(var(--primary))]">See all</Link></div><div className="mt-5 grid gap-3">{candidates.slice(0, 3).map((c, i) => <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl bg-[hsl(var(--muted))] p-3"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-full text-xs font-semibold text-white" style={{ background: c.color }}>{c.initials}</div><div><p className="text-sm font-semibold">{c.name}</p><p className="text-xs text-[hsl(var(--muted-foreground))]">{i === 0 ? 'Moved to human review' : i === 1 ? 'Added evidence note' : 'Saved to shortlist'}</p></div></div><Badge tone={i === 0 ? 'good' : 'quiet'}>{i === 0 ? 'Today' : 'Yesterday'}</Badge></div>)}</div></section><section className="rounded-2xl bg-[#f8e6cf] p-6"><p className="eyebrow text-[#925d26]">Employer readiness</p><p className="mt-4 font-display text-2xl">Your story helps candidates choose you too.</p><p className="mt-3 text-sm leading-6 text-[#925d26]/80">Add flexibility, manager context, and a real first-90-days view to improve qualified applications.</p><Link href="/recruiter/settings" data-testid="link-employer-readiness" className="mt-5 inline-flex items-center text-sm font-semibold text-[#925d26]">Complete profile <ArrowRight size={15} className="ml-2" /></Link></section></div></WorkspaceShell>;
+  const p = useProduct(); 
+  const { user } = useUser();
+  const greeting = useTimeGreeting();
+  const recruiterName = user?.firstName || 'Alex';
+  usePageMeta('Recruiter overview', 'A human-reviewed intelligence workspace for hiring teams.');
+  return <WorkspaceShell role="recruiter"><PageTitle title={`${greeting}, ${recruiterName}.`} description="Your team can move quickly today without letting the score make the decision." action={<Link href="/recruiter/jobs/create" data-testid="link-create-job-home" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]"><Plus size={15} className="mr-2" /> Create a role</Link>} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] sm:p-8"><div className="flex flex-wrap items-start justify-between gap-5"><div><p className="eyebrow text-[hsl(var(--accent))]">Hiring signal</p><h2 className="mt-3 font-display text-3xl">Your shortlist is ready for judgment.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/60">12 candidates have verified skill evidence for Product Operations Lead. 4 are ready for a human review.</p></div><UsersRound size={30} className="text-[hsl(var(--accent))]" /></div><div className="mt-8 grid gap-3 border-t border-[hsl(var(--sidebar-foreground))]/15 pt-5 sm:grid-cols-3"><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Open roles</p><p className="mt-1 font-data text-xl">8</p></div><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Shortlist-ready</p><p className="mt-1 font-data text-xl">12</p></div><div><p className="text-xs text-[hsl(var(--sidebar-foreground))]/55">Human reviewed</p><p className="mt-1 font-data text-xl text-[hsl(var(--accent))]">68%</p></div></div><Link href="/recruiter/shortlist" data-testid="link-review-shortlist-home" className="mt-7 inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--accent))] px-4 text-sm font-semibold text-[hsl(var(--foreground))]">Review shortlist <ArrowRight size={15} className="ml-2" /></Link></section><section className="surface rounded-2xl p-6"><div className="flex items-center justify-between"><div><p className="eyebrow">Fairness monitor</p><p className="mt-2 font-display text-2xl">Healthy with one watch</p></div><ShieldCheck size={23} className="text-[hsl(var(--primary))]" /></div><div className="mt-6 rounded-xl bg-[#e1f0ea] p-4"><div className="flex items-center gap-2 text-sm font-semibold text-[#23614e]"><CheckCircle2 size={16} /> Career breaks excluded from scoring</div><p className="mt-2 text-xs leading-5 text-[#23614e]/75">Fit signals use verified skills, role evidence, and stated preferences.</p></div><div className="mt-5 flex items-center justify-between text-sm"><span>Location signal variance</span><Badge tone="warm">Review</Badge></div><Link href="/recruiter/bias-audit" data-testid="link-view-fairness" className="mt-5 inline-flex items-center text-sm font-semibold text-[hsl(var(--primary))]">Open monitor <ArrowRight size={15} className="ml-2" /></Link></section></div><div className="mt-5 grid gap-5 lg:grid-cols-3"><section className="surface rounded-2xl p-6 lg:col-span-2"><div className="flex items-center justify-between"><div><p className="eyebrow">Recent activity</p><h2 className="mt-2 font-display text-2xl">Keep the conversation moving.</h2></div><Link href="/recruiter/candidates" data-testid="link-all-candidates" className="text-sm font-semibold text-[hsl(var(--primary))]">See all</Link></div><div className="mt-5 grid gap-3">{candidates.slice(0, 3).map((c, i) => <div key={c.id} className="flex items-center justify-between gap-3 rounded-xl bg-[hsl(var(--muted))] p-3"><div className="flex items-center gap-3"><div className="grid h-9 w-9 place-items-center rounded-full text-xs font-semibold text-white" style={{ background: c.color }}>{c.initials}</div><div><p className="text-sm font-semibold">{c.name}</p><p className="text-xs text-[hsl(var(--muted-foreground))]">{i === 0 ? 'Moved to human review' : i === 1 ? 'Added evidence note' : 'Saved to shortlist'}</p></div></div><Badge tone={i === 0 ? 'good' : 'quiet'}>{i === 0 ? 'Today' : 'Yesterday'}</Badge></div>)}</div></section><section className="rounded-2xl bg-[#f8e6cf] p-6"><p className="eyebrow text-[#925d26]">Employer readiness</p><p className="mt-4 font-display text-2xl">Your story helps candidates choose you too.</p><p className="mt-3 text-sm leading-6 text-[#925d26]/80">Add flexibility, manager context, and a real first-90-days view to improve qualified applications.</p><Link href="/recruiter/settings" data-testid="link-employer-readiness" className="mt-5 inline-flex items-center text-sm font-semibold text-[#925d26]">Complete profile <ArrowRight size={15} className="ml-2" /></Link></section></div></WorkspaceShell>;
 }
 function RecruiterJobs() {
   return <WorkspaceShell role="recruiter"><PageTitle eyebrow="Jobs" title="Roles in motion." description="Give every opening a clear brief, a fair signal, and a human owner." action={<Link href="/recruiter/jobs/create" data-testid="link-create-job" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]"><Plus size={15} className="mr-2" /> Create a role</Link>} /><div className="grid gap-4">{jobs.map((job, i) => <div key={job.id} className="surface flex flex-wrap items-center justify-between gap-4 rounded-2xl p-5"><div className="flex items-center gap-4"><div className="grid h-11 w-11 place-items-center rounded-xl bg-[hsl(var(--secondary))] text-[hsl(var(--primary))]"><BriefcaseBusiness size={19} /></div><div><Link href={`/recruiter/jobs/${job.id}`} data-testid={`link-recruiter-job-${job.id}`} className="font-semibold">{job.title}</Link><p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{job.location} · {job.mode} · Updated {i + 1}d ago</p></div></div><div className="flex items-center gap-6"><div className="hidden text-right sm:block"><p className="font-data text-lg">{12 + i * 3}</p><p className="text-[11px] text-[hsl(var(--muted-foreground))]">candidates</p></div><Badge tone={i < 3 ? 'good' : 'quiet'}>{i < 3 ? 'Active' : 'Draft'}</Badge><MoreHorizontal size={18} className="text-[hsl(var(--muted-foreground))]" /></div></div>)}</div></WorkspaceShell>;
@@ -3752,6 +4694,14 @@ function App() {
   });
   const [isOnboarded, setIsOnboardedState] = useState(() => localStorage.getItem('rp-onboarded') === 'true');
   const [fit, setFitState] = useState(() => Number(localStorage.getItem('rp-fit') || 0));
+  const [latestMatch, setLatestMatchState] = useState<any>(() => {
+    try {
+      const stored = localStorage.getItem('rp-latest-match');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
   const [completedLearning, setCompletedLearningState] = useState(() => localStorage.getItem('rp-learning') === 'true');
   const [savedJobs, setSavedJobs] = useState<number[]>(() => JSON.parse(localStorage.getItem('rp-saved') || '[]') as number[]);
   const [applications, setApplications] = useState<number[]>(() => JSON.parse(localStorage.getItem('rp-applications') || '[]') as number[]);
@@ -3766,6 +4716,15 @@ function App() {
   const setIsOnboarded = (val: boolean) => {
     setIsOnboardedState(val);
     localStorage.setItem('rp-onboarded', String(val));
+  };
+
+  const setLatestMatch = (match: any) => {
+    setLatestMatchState(match);
+    if (match) {
+      try {
+        localStorage.setItem('rp-latest-match', JSON.stringify(match));
+      } catch {}
+    }
   };
 
   // NOTE: Profile is loaded after auth resolves in AuthSessionSync (with userId).
@@ -3794,8 +4753,8 @@ function App() {
   
   const state = useMemo(() => ({
     fit, completedLearning, savedJobs, applications, shortlist, analysis, plan, toast,
-    profile, isOnboarded, setIsOnboarded, updateProfile, setFit, setCompletedLearning, toggleSaved, apply, toggleShortlist, setAnalysis, setPlan, notify
-  }), [fit, completedLearning, savedJobs, applications, shortlist, analysis, plan, toast, profile, isOnboarded]);
+    profile, latestMatch, setLatestMatch, isOnboarded, setIsOnboarded, updateProfile, setFit, setCompletedLearning, toggleSaved, apply, toggleShortlist, setAnalysis, setPlan, notify
+  }), [fit, completedLearning, savedJobs, applications, shortlist, analysis, plan, toast, profile, latestMatch, isOnboarded]);
 
   return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={basePath}><ClerkProductApp state={state} /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }

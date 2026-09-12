@@ -63,7 +63,11 @@ export interface JobMatchResponse {
   overallFitScore: number;
   skillAlignmentScore: number;
   breakImpactScore?: number;
+  breakNeutralityExplanation?: string;
+  matchSummary?: string;
   matchingStrengths: string[];
+  transferableStrengths?: string[];
+  evidenceHighlights?: string[];
   skillGaps: string[];
   threeWeekBoostProjected: number;
   sapLearningHubModules: {

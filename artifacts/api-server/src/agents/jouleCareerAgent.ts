@@ -53,7 +53,7 @@ CURRENT CANDIDATE CONTEXT:
 - Stated Work Mode: ${profile?.workMode || "Hybrid"}
 - Verified Skills: ${skillsList}
 - Current Role Fit Score: ${fitScore}%
-- Verified Readiness Score: ${readinessScore}% (Projected 92%+ with recommended SAP Learning Hub modules)
+- Verified Readiness Score: ${readinessScore}%
 ${profile?.projects && profile.projects.length > 0 ? `- Notable Projects: ${profile.projects.map(p => `${p.title} (${p.techStack.join(', ')})`).join('; ')}` : ''}
 ${profile?.education && profile.education.length > 0 ? `- Education: ${profile.education.map(e => `${e.degree} from ${e.institution}`).join('; ')}` : ''}
 
@@ -63,10 +63,11 @@ CORE PRINCIPLES & GUIDELINES:
 1. UNIVERSAL TALENT EMPOWERMENT: Evaluate candidates strictly on their demonstrated capabilities, technical artifacts, and continuous learning.
 2. PERSONALIZED SPECIFICITY: Address the candidate naturally by name (${candidateName}). Refer to their actual target role (${targetRole}), target company (${targetCompany}), verified skills (${skillsList}), and projects.
 3. HIGH READABILITY & STRUCTURE:
-   - Structure responses with crisp markdown headings (e.g. \`### 💡 Key Takeaway\`, \`### 🎯 Actionable Next Steps\`, \`### 💬 Suggested Script for Interviewers\`, \`### 📚 Recommended SAP Learning Bridge\`).
+   - Structure responses with crisp markdown headings (e.g. \`### 💡 Key Takeaway\`, \`### 🎯 Actionable Next Steps\`, \`### 💬 Suggested Script for Interviewers\`, \`### 📚 Recommended Learning Pathway\`).
    - Use bold highlights and bullet points (\`-\`) for quick scanning.
    - When helping with interview prep, provide exact verbatim scripts in blockquotes.
-4. SAP LEARNING HUB INTEGRATION: When discussing skill gaps, reference relevant micro-credentials on SAP Learning Hub to elevate their readiness.`;
+4. CONTINUOUS LEARNING & GROWTH: When discussing skill gaps, reference relevant competency development areas to elevate their capability profile.
+5. CODE & ARCHITECTURE FORMATTING: When writing code (TypeScript, JavaScript, SQL, Bash) or architectural diagrams, ALWAYS wrap them in complete markdown code blocks with language identifiers (e.g. \`\`\`typescript ... \`\`\` or \`\`\`text ... \`\`\`). Use clean markdown tables and structured lists for high readability.`;
 
     if (groqKey) {
       const modelsToTry = ["llama-3.3-70b-versatile", "openai/gpt-oss-120b", "llama-3.1-8b-instant"];
@@ -89,7 +90,7 @@ CORE PRINCIPLES & GUIDELINES:
               model,
               messages,
               temperature: 0.5,
-              max_tokens: 1000
+              max_tokens: 3500
             })
           });
 
@@ -135,21 +136,22 @@ Hi **${name}**, here is how to position your expertise for **${role}** at **${co
     }
 
     if (q.includes("learn") || q.includes("course") || q.includes("skill") || q.includes("gap")) {
-      return `### 📚 Your Personalized SAP Learning Pathway
+      return `### 📚 Recommended Skill Growth & Learning Pathway
 
-Hi **${name}**, based on your target role of **${role}** at **${company}**, here is your learning roadmap to reach **92%+ readiness**:
+Hi **${name}**, based on your target role of **${role}** at **${company}**, here are key competency areas to expand:
 
-### 🎯 Recommended 3-Week Curriculum
-1. **Week 1: Enterprise Architecture & Cloud Native Principles**
+### 🎯 Recommended Competency Modules
+1. **Enterprise Architecture & System Design for ${role}**
    - *Competency*: Scalable application design & microservices orchestration.
-2. **Week 2: Advanced Data Modeling & Systems Integration**
+2. **Advanced Data Modeling & Systems Integration**
    - *Competency*: End-to-end API integration and data streaming.
-3. **Week 3: Agile Engineering & Production Delivery**
+3. **Agile Engineering & Production Delivery**
    - *Competency*: CI/CD automation, testing frameworks, and observability.
 
 ### 💡 Next Step
-These learning modules are available on **SAP Learning Hub** and will update your skills profile upon completion.`;
+Explore relevant micro-credentials and hands-on projects to add more verified signals to your profile.`;
     }
+
 
     return `### 🤖 SAP Joule Career Co-Pilot
 

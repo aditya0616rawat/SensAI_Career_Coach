@@ -1,9 +1,7 @@
 node_modules/
 .git/
-.env
-.replit
-.replitignore
-artifacts/mockup-sandbox/
-# Force CF buildpack to reinstall native modules (e.g. @sap/hana-client) for Linux
-artifacts/api-server/node_modules/
-
+.github/
+.vscode/
+.gemini/
+*.log
+.DS_Store

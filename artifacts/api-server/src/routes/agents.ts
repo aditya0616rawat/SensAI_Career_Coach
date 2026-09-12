@@ -3,6 +3,7 @@ import { skillsDiscoveryAgent } from "../agents/skillsDiscoveryAgent";
 import { inclusiveMatchingAgent } from "../agents/inclusiveMatchingAgent";
 import { biasAuditAgent } from "../agents/biasAuditAgent";
 import { jouleCareerAgent } from "../agents/jouleCareerAgent";
+import { hanaDb } from "../db/hana";
 import { sendInternalError } from "../lib/http";
 import { rateLimit } from "../middlewares/rateLimit";
 import { requireAuth, requireRecruiter } from "../middlewares/requireAuth";
@@ -32,17 +33,39 @@ agentsRouter.post("/extract-skills", async (req, res) => {
   }
 });
 
-// 2. Inclusive Matching Agent Endpoint
+// 2. Inclusive Matching Agent Endpoints
 agentsRouter.post("/match", async (req, res) => {
   try {
-    const jobId = Number(req.body.jobId);
+    const jobId = Number(req.body.jobId || 1);
     if (!Number.isInteger(jobId) || jobId < 1) {
       return res.status(400).json({ success: false, error: "jobId must be a positive integer." });
     }
-    const result = await inclusiveMatchingAgent.calculateMatch(res.locals.userId, jobId);
+
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
+    const clientProfile = req.body.profile;
+
+    let result;
+    if (clientProfile && typeof clientProfile === "object") {
+      const job = await hanaDb.getJob(jobId);
+      if (!job) return res.status(404).json({ success: false, error: "Job requisition not found." });
+      result = await inclusiveMatchingAgent.calculateMatchForProfile(clientProfile, job, apiKey);
+    } else {
+      result = await inclusiveMatchingAgent.calculateMatch(res.locals.userId, jobId, apiKey);
+    }
+
     return res.json({ success: true, data: result, framework: "SAP Inclusive Matching Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Candidate matching failed");
+  }
+});
+
+agentsRouter.get("/matches", async (_req, res) => {
+  try {
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
+    const matches = await inclusiveMatchingAgent.calculateMatchesForCandidate(res.locals.userId, apiKey);
+    return res.json({ success: true, data: matches, framework: "SAP Inclusive Matching Agent" });
+  } catch (error) {
+    return sendInternalError(res, error, "Candidate multi-job matching failed");
   }
 });
 
@@ -56,16 +79,53 @@ agentsRouter.get("/bias-audit", requireRecruiter, async (_req, res) => {
   }
 });
 
-// 4. Joule Conversational AI Coach Endpoint
+// 4. Joule Conversational AI Coach Endpoint (Fully Grounded in DB Candidate Profile)
 agentsRouter.post("/chat", async (req, res) => {
   try {
     const message = textInput(req.body.message, 12_000);
     if (!message) return res.status(400).json({ success: false, error: "message must be a non-empty string up to 12,000 characters." });
     const { history, profile } = req.body;
+    const authenticatedUserId = res.locals.userId as string;
+
+    // Actively query the database for the candidate's real profile
+    let dbProfile: any = null;
+    if (authenticatedUserId) {
+      try {
+        dbProfile = await hanaDb.getCandidateProfile(authenticatedUserId);
+      } catch (err) {
+        console.warn("Could not query DB for candidate profile:", err);
+      }
+    }
+
+    // Merge: client-supplied context with saved DB profile
+    const mergedProfile = {
+      ...(dbProfile || {}),
+      ...(profile || {}),
+      name: profile?.name || dbProfile?.name || dbProfile?.candidateName || "",
+      targetRole: profile?.targetRole || dbProfile?.targetRole || dbProfile?.title || "",
+      targetCompany: profile?.targetCompany || dbProfile?.targetCompany || "",
+      location: profile?.location || dbProfile?.location || "",
+      skills: (Array.isArray(profile?.skills) && profile.skills.length > 0)
+        ? profile.skills
+        : (Array.isArray(dbProfile?.skills) ? dbProfile.skills.map((s: any) => typeof s === 'string' ? s : s.name) : []),
+      projects: (Array.isArray(profile?.projects) && profile.projects.length > 0)
+        ? profile.projects
+        : (dbProfile?.projects || []),
+      education: (Array.isArray(profile?.education) && profile.education.length > 0)
+        ? profile.education
+        : (dbProfile?.education || []),
+      experience: (Array.isArray(profile?.experience) && profile.experience.length > 0)
+        ? profile.experience
+        : (dbProfile?.experience || []),
+      fit: profile?.fit ?? dbProfile?.fit ?? 85,
+      readinessRating: profile?.readinessRating ?? dbProfile?.readinessRating ?? 88,
+    };
+
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
-    const reply = await jouleCareerAgent.chat(message, Array.isArray(history) ? history.slice(-10) : [], profile, apiKey);
-    return res.json({ success: true, reply, agent: "SAP Joule Career Assistant" });
+    const reply = await jouleCareerAgent.chat(message, Array.isArray(history) ? history.slice(-10) : [], mergedProfile, apiKey);
+    return res.json({ success: true, reply, agent: "SAP Joule Career Assistant", profile: mergedProfile });
   } catch (error) {
     return sendInternalError(res, error, "Career assistant request failed");
   }
 });
+

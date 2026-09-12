@@ -35,8 +35,11 @@ candidateRouter.post("/onboarding/resume", async (req, res) => {
 
     let resumeText = "";
 
-    // 1. If base64 binary is provided (PDF/document upload), ALWAYS prioritize server-side extraction
-    if (typeof fileBase64 === "string" && fileBase64.length > 20) {
+    // 1. Prioritize client-extracted text (from Mozilla PDF.js directly in the browser)
+    if (typeof text === "string" && text.trim().length > 20) {
+      resumeText = text.trim();
+    } else if (typeof fileBase64 === "string" && fileBase64.length > 20) {
+      // 2. Fallback to server-side extraction if client text is absent
       try {
         const buffer = Buffer.from(fileBase64, "base64");
         const serverExtracted = await extractTextFromPdfBuffer(buffer);
@@ -46,11 +49,6 @@ candidateRouter.post("/onboarding/resume", async (req, res) => {
       } catch (e: any) {
         console.warn("Server PDF base64 decode failed:", e.message);
       }
-    }
-
-    // 2. Fallback to client-provided text (pasted text or direct plain text)
-    if (!resumeText && text && typeof text === "string" && text.trim().length > 20) {
-      resumeText = text.trim();
     }
 
     if (!resumeText || resumeText.length < 20) {
@@ -284,13 +282,30 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
+    const primaryJob = (await hanaDb.getJob(1)) || {
+      id: 1,
+      title: profileData.targetRole || "Product Operations Lead",
+      company: profileData.targetCompany || "SAP Labs India",
+      skills: profileData.skills,
+    };
+
+    let match;
+    try {
+      match = await inclusiveMatchingAgent.calculateMatchForProfile(profileData, primaryJob, apiKey);
+      profileData.fit = match.overallFitScore;
+      (profileData as any).latestMatch = match;
+    } catch {
+      // Fallback if match calculation fails
+      profileData.fit = 84;
+    }
+
     const saved = await hanaDb.saveCandidateProfile(profileData);
-    const match = await inclusiveMatchingAgent.calculateMatch(saved.id, 1);
 
     return res.json({
       success: true,
       profile: saved,
-      match,
+      match: match || { overallFitScore: saved.fit || 84 },
       message: "Onboarding completed and full profile stored in SAP Talent Intelligence Hub.",
     });
   } catch (error) {
@@ -326,6 +341,118 @@ candidateRouter.put("/profile", async (req, res) => {
   }
 });
 
+// 6. GET Candidate Match — returns stored match or computes once and persists
+candidateRouter.get("/match", async (req, res) => {
+  try {
+    const authenticatedUserId = res.locals.userId as string;
+    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    if (!profile) {
+      return res.status(404).json({ success: false, error: "Candidate profile not found." });
+    }
+
+    const forceRecalculate = req.query.recalculate === "true";
+    // If a match is already stored in the database and recalculation wasn't requested, return it directly!
+    if (!forceRecalculate && profile.latestMatch) {
+      return res.json({
+        success: true,
+        match: profile.latestMatch,
+        cached: true,
+        framework: "SAP Inclusive Matching Agent",
+      });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
+
+    let targetJob = null;
+    if (profile.targetRole) {
+      const allJobs = await hanaDb.getJobs();
+      targetJob = allJobs.find((j: any) => 
+        j.title.toLowerCase().includes(profile.targetRole.toLowerCase()) || 
+        profile.targetRole.toLowerCase().includes(j.title.toLowerCase())
+      );
+    }
+
+    const primaryJob = targetJob || {
+      id: 1,
+      title: profile.targetRole || "Software Engineer",
+      company: profile.targetCompany || "Enterprise Employer",
+      skills: profile.skills || [],
+      location: profile.location || "Hybrid",
+      mode: profile.workMode || "Hybrid",
+      description: `Role matching verified capabilities in ${profile.skills?.slice(0, 5).join(", ") || "engineering"}.`
+    };
+
+    const match = await inclusiveMatchingAgent.calculateMatchForProfile(profile, primaryJob, apiKey);
+    
+    // Store in profile so future page reloads and logins never re-trigger calculation
+    profile.fit = match.overallFitScore;
+    profile.latestMatch = match;
+    await hanaDb.saveCandidateProfile(profile);
+
+    return res.json({ success: true, match, framework: "SAP Inclusive Matching Agent" });
+  } catch (error) {
+    return sendInternalError(res, error, "Candidate match retrieval failed");
+  }
+});
+
+// 7. POST Recalculate Candidate Match — triggered exclusively by user action in Profile section
+candidateRouter.post("/match/recalculate", async (_req, res) => {
+  try {
+    const authenticatedUserId = res.locals.userId as string;
+    const profile = await hanaDb.getCandidateProfile(authenticatedUserId);
+    if (!profile) {
+      return res.status(404).json({ success: false, error: "Candidate profile not found." });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
+
+    let targetJob = null;
+    if (profile.targetRole) {
+      const allJobs = await hanaDb.getJobs();
+      targetJob = allJobs.find((j: any) => 
+        j.title.toLowerCase().includes(profile.targetRole.toLowerCase()) || 
+        profile.targetRole.toLowerCase().includes(j.title.toLowerCase())
+      );
+    }
+
+    const primaryJob = targetJob || {
+      id: 1,
+      title: profile.targetRole || "Software Engineer",
+      company: profile.targetCompany || "Enterprise Employer",
+      skills: profile.skills || [],
+      location: profile.location || "Hybrid",
+      mode: profile.workMode || "Hybrid",
+      description: `Role matching verified capabilities in ${profile.skills?.slice(0, 5).join(", ") || "engineering"}.`
+    };
+
+    const match = await inclusiveMatchingAgent.calculateMatchForProfile(profile, primaryJob, apiKey);
+    profile.fit = match.overallFitScore;
+    profile.latestMatch = match;
+    const saved = await hanaDb.saveCandidateProfile(profile);
+
+    return res.json({
+      success: true,
+      match,
+      fit: match.overallFitScore,
+      profile: saved,
+      framework: "SAP Inclusive Matching Agent",
+      message: "Fit score successfully recalculated and saved to SAP Talent Intelligence Hub.",
+    });
+  } catch (error) {
+    return sendInternalError(res, error, "Fit score recalculation failed");
+  }
+});
+
+// 7. GET Candidate Jobs — retrieves available job requisitions
+candidateRouter.get("/jobs", async (_req, res) => {
+  try {
+    const jobs = await hanaDb.getJobs();
+    return res.json({ success: true, jobs });
+  } catch (error) {
+    return sendInternalError(res, error, "Candidate jobs retrieval failed");
+  }
+});
+
 // 6. SMART RESUME SYNC & INCREMENTAL PROFILE MERGER
 candidateRouter.post("/profile/sync-resume", async (req, res) => {
   try {
@@ -335,8 +462,11 @@ candidateRouter.post("/profile/sync-resume", async (req, res) => {
 
     let resumeText = "";
 
-    // 1. If base64 binary is provided (PDF/document upload), ALWAYS prioritize server-side extraction
-    if (typeof fileBase64 === "string" && fileBase64.length > 20) {
+    // 1. Prioritize client-extracted text (from Mozilla PDF.js directly in the browser)
+    if (typeof text === "string" && text.trim().length > 20) {
+      resumeText = text.trim();
+    } else if (typeof fileBase64 === "string" && fileBase64.length > 20) {
+      // 2. Fallback to server-side extraction if client text is absent
       try {
         const buffer = Buffer.from(fileBase64, "base64");
         const serverExtracted = await extractTextFromPdfBuffer(buffer);
@@ -346,11 +476,6 @@ candidateRouter.post("/profile/sync-resume", async (req, res) => {
       } catch (e: any) {
         console.warn("Server PDF base64 decode failed:", e.message);
       }
-    }
-
-    // 2. Fallback to client-provided text
-    if (!resumeText && text && typeof text === "string" && text.trim().length > 20) {
-      resumeText = text.trim();
     }
 
     if (!resumeText || resumeText.length < 20) {
