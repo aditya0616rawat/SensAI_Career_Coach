@@ -16,7 +16,7 @@ export class NeonDatabase {
       {
         id: 1,
         title: "Product Operations Lead",
-        company: "ReturnPath AI",
+        company: "SensAI",
         location: "Bangalore (Hybrid)",
         mode: "Hybrid",
         salary: "₹28L – ₹36L",

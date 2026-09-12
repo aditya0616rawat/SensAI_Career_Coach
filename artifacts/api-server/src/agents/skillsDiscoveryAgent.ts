@@ -78,7 +78,7 @@ export class SkillsDiscoveryAgent {
 
     if (groqKey && rawText && rawText.length > 20) {
       try {
-        const prompt = `You are the Skills Discovery Agent on ReturnPath AI.
+        const prompt = `You are the Skills Discovery Agent on SensAI Career Coach.
 Analyze the following resume or profile description for ANY candidate (student, graduate, software engineer, or experienced professional).
 Extract all verifiable information into structured fields based STRICTLY on the provided text.
 CRITICAL: Do NOT invent or insert fake projects, fake experiences, or fake certifications if they are not in the text. Return empty arrays [] for sections not present.
@@ -447,7 +447,7 @@ ${rawText}`;
 
     if (groqKey && rawText && rawText.length > 20) {
       try {
-        const prompt = `You are the Skills Discovery Agent on ReturnPath AI.
+        const prompt = `You are the Skills Discovery Agent on SensAI Career Coach.
 A candidate has uploaded an updated resume to incrementally sync and enhance their existing profile.
 
 Current Profile Data:

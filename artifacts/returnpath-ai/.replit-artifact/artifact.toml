@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "ReturnPath AI"
+title = "SensAI Career Coach"
 description = "A frontend-only skills-first recruitment experience for candidates and employers, with explainable matching, learning pathways, recruiter fairness monitoring, and human-in-the-loop review workflows."
 version = "1.0.0"
 id = "artifacts/returnpath-ai"
