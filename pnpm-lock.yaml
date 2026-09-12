@@ -81,9 +81,6 @@ importers:
       '@replit/connectors-sdk':
         specifier: ^0.4.1
         version: 0.4.1
-      '@sap/hana-client':
-        specifier: ^2.29.27
-        version: 2.29.27
     devDependencies:
       prettier:
         specifier: ^3.9.6
@@ -100,9 +97,6 @@ importers:
       '@clerk/shared':
         specifier: ^4.30.1
         version: 4.30.1(react-dom@19.1.4(react@19.1.4))(react@19.1.4)
-      '@sap/hana-client':
-        specifier: ^2.29.27
-        version: 2.29.27
       '@types/pdf-parse':
         specifier: ^1.1.5
         version: 1.1.5
@@ -130,6 +124,9 @@ importers:
       pdf-parse:
         specifier: 1.1.1
         version: 1.1.1
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
       pino:
         specifier: ^9.14.0
         version: 9.14.0
@@ -1843,10 +1840,6 @@ packages:
     resolution: {integrity: sha512-MOG/3gTOn4Fwf574RVOaY61I5o6P90legkFADiTyn1hyjNydT+cerU2rLUwPdZkKKyJ+iT+K9p7WXK4LM1Ka6g==}
     cpu: [x64]
     os: [win32]
-
-  '@sap/hana-client@2.29.27':
-    resolution: {integrity: sha512-YOoUAkLQcXcnZE6cffv/QxZ94RpfA2zO+/Pctoq7t26mD0oNalCY7qQcvWCjApsNrSNIeDF4diZ3FcutoprWcA==}
-    engines: {node: '>=4.0.0'}
 
   '@scalar/helpers@0.9.2':
     resolution: {integrity: sha512-hjyMpMZjTBZQhyByZmz5oUgRKUQJO5V5AOiJxsVEGbUmgA7sJRQeTrXLB+BEwzaKS5nm2opJeNyMBYLFNK4hiQ==}
@@ -4890,12 +4883,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.62.3':
     optional: true
-
-  '@sap/hana-client@2.29.27':
-    dependencies:
-      debug: 3.1.0
-    transitivePeerDependencies:
-      - supports-color
 
   '@scalar/helpers@0.9.2': {}
 
