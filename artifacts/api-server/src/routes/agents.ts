@@ -2,7 +2,7 @@ import { Router } from "express";
 import { skillsDiscoveryAgent } from "../agents/skillsDiscoveryAgent";
 import { inclusiveMatchingAgent } from "../agents/inclusiveMatchingAgent";
 import { biasAuditAgent } from "../agents/biasAuditAgent";
-import { jouleCareerAgent } from "../agents/jouleCareerAgent";
+import { careerCoachAgent } from "../agents/jouleCareerAgent";
 import { hanaDb } from "../db/hana";
 import { sendInternalError } from "../lib/http";
 import { rateLimit } from "../middlewares/rateLimit";
@@ -27,7 +27,7 @@ agentsRouter.post("/extract-skills", async (req, res) => {
     if (!text) return res.status(400).json({ success: false, error: "text must be a non-empty string up to 60,000 characters." });
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
     const result = await skillsDiscoveryAgent.extractSkills(text, apiKey);
-    return res.json({ success: true, data: result, framework: "SAP Talent Intelligence Hub Agent" });
+    return res.json({ success: true, data: result, framework: "Skills Discovery Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Skills extraction failed");
   }
@@ -53,7 +53,7 @@ agentsRouter.post("/match", async (req, res) => {
       result = await inclusiveMatchingAgent.calculateMatch(res.locals.userId, jobId, apiKey);
     }
 
-    return res.json({ success: true, data: result, framework: "SAP Inclusive Matching Agent" });
+    return res.json({ success: true, data: result, framework: "Inclusive Matching Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Candidate matching failed");
   }
@@ -63,7 +63,7 @@ agentsRouter.get("/matches", async (_req, res) => {
   try {
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
     const matches = await inclusiveMatchingAgent.calculateMatchesForCandidate(res.locals.userId, apiKey);
-    return res.json({ success: true, data: matches, framework: "SAP Inclusive Matching Agent" });
+    return res.json({ success: true, data: matches, framework: "Inclusive Matching Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Candidate multi-job matching failed");
   }
@@ -73,13 +73,13 @@ agentsRouter.get("/matches", async (_req, res) => {
 agentsRouter.get("/bias-audit", requireRecruiter, async (_req, res) => {
   try {
     const result = await biasAuditAgent.runAudit();
-    return res.json({ success: true, data: result, framework: "SAP Bias Audit & Governance Agent" });
+    return res.json({ success: true, data: result, framework: "Bias Audit & Governance Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Bias audit failed");
   }
 });
 
-// 4. Joule Conversational AI Coach Endpoint (Fully Grounded in DB Candidate Profile)
+// 4. AI Career Coach Endpoint (Fully Grounded in DB Candidate Profile)
 agentsRouter.post("/chat", async (req, res) => {
   try {
     const message = textInput(req.body.message, 12_000);
@@ -122,10 +122,9 @@ agentsRouter.post("/chat", async (req, res) => {
     };
 
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY;
-    const reply = await jouleCareerAgent.chat(message, Array.isArray(history) ? history.slice(-10) : [], mergedProfile, apiKey);
-    return res.json({ success: true, reply, agent: "SAP Joule Career Assistant", profile: mergedProfile });
+    const reply = await careerCoachAgent.chat(message, Array.isArray(history) ? history.slice(-10) : [], mergedProfile, apiKey);
+    return res.json({ success: true, reply, agent: "SensAI Career Coach", profile: mergedProfile });
   } catch (error) {
     return sendInternalError(res, error, "Career assistant request failed");
   }
 });
-

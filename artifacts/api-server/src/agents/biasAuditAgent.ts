@@ -3,7 +3,7 @@ import { hanaDb } from "../db/hana";
 
 export class BiasAuditAgent {
   /**
-   * SAP Bias Audit & Governance Agent
+   * Bias Audit & Governance Agent
    * Validates ranking fairness and ensures objective, skill-first candidate evaluation.
    */
   async runAudit(): Promise<BiasAuditResponse> {

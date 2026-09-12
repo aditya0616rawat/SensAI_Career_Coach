@@ -40,7 +40,7 @@ app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 /**
  * CORS allowlist.
- * On SAP BTP: set via `cf set-env returnpath-ai ALLOWED_ORIGINS https://your-app.cfapps.ap21.hana.ondemand.com`
+ * Set via env var: ALLOWED_ORIGINS=https://your-app.com
  * Multiple origins: comma-separated  →  "https://a.com,https://b.com"
  * Local dev default: localhost ports 5000 and 5173 (Vite)
  */

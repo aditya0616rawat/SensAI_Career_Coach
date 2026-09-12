@@ -17,10 +17,11 @@ export interface CandidateContext {
   topStrengths?: string[];
 }
 
-export class JouleCareerAgent {
+export class CareerCoachAgent {
   /**
-   * SAP Joule AI Career Co-Pilot
-   * A universal talent & skills intelligence assistant grounded in SAP Talent Intelligence Hub.
+   * AI Career Coach
+   * A universal talent & skills intelligence assistant that helps candidates
+   * prepare for roles, discover skill gaps, and build their career narrative.
    */
   async chat(
     userMessage: string,
@@ -32,16 +33,15 @@ export class JouleCareerAgent {
 
     const candidateName = profile?.name?.trim() || "Candidate";
     const targetRole = profile?.targetRole?.trim() || "Software Engineer";
-    const targetCompany = profile?.targetCompany?.trim() || "SAP Labs";
+    const targetCompany = profile?.targetCompany?.trim() || "your target company";
     const skillsList = Array.isArray(profile?.skills) && profile.skills.length > 0
       ? profile.skills.join(", ")
       : "Software Engineering, Problem Solving, Continuous Learning";
     const fitScore = profile?.fit ?? 85;
     const readinessScore = profile?.readinessRating ?? 88;
 
-    const systemPrompt = `You are SAP Joule, the AI Career Co-Pilot on ReturnPath AI.
-You are grounded in the SAP Talent Intelligence Hub, SAP Growth Portfolio, and modern talent intelligence.
-You support ALL candidates (students, new graduates, working software engineers, career switchers, and professionals).
+    const systemPrompt = `You are SensAI Career Coach, an AI-powered career co-pilot.
+You help ALL candidates — students, new graduates, working engineers, career switchers, and professionals returning from breaks.
 
 ==================================================
 CURRENT CANDIDATE CONTEXT:
@@ -153,21 +153,22 @@ Explore relevant micro-credentials and hands-on projects to add more verified si
     }
 
 
-    return `### 🤖 SAP Joule Career Co-Pilot
+    return `### 🤖 SensAI Career Coach
 
-Hi **${name}**, I am ready to help you accelerate your journey toward **${role}** at **${company}**.
+Hi **${name}**, I am ready to help you accelerate your journey toward **${role}**${company ? ` at **${company}**` : ''}.
 
 ### 📊 Verified Profile Highlights
-- **Target Role**: ${role} (${company})
-- **Current Alignment**: **${fit}% Fit** (Verified by SAP Talent Intelligence Hub)
+- **Target Role**: ${role}${company ? ` (${company})` : ''}
+- **Current Alignment**: **${fit}% Fit**
 - **Top Competencies**: ${skills}
 
 ### 🎯 How Can I Help You Today?
 - **Interview Coaching**: Practice technical and behavioral interview scenarios.
 - **Project Highlighting**: Craft compelling narratives around your technical artifacts.
-- **Skill Acceleration**: Review recommended SAP Learning Hub modules.`;
+- **Skill Acceleration**: Review recommended learning resources and growth pathways.`;
   }
 }
 
-export const jouleCareerAgent = new JouleCareerAgent();
-
+export const careerCoachAgent = new CareerCoachAgent();
+// backwards-compat alias
+export const jouleCareerAgent = careerCoachAgent;

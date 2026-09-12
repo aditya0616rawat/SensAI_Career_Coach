@@ -70,7 +70,7 @@ export interface JobMatchResponse {
   evidenceHighlights?: string[];
   skillGaps: string[];
   threeWeekBoostProjected: number;
-  sapLearningHubModules: {
+  learningModules: {
     week: number;
     title: string;
     courseUrl: string;

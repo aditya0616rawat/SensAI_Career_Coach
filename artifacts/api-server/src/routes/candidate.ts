@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { skillsDiscoveryAgent } from "../agents/skillsDiscoveryAgent";
 import { inclusiveMatchingAgent } from "../agents/inclusiveMatchingAgent";
-import { jouleCareerAgent } from "../agents/jouleCareerAgent";
+import { careerCoachAgent } from "../agents/jouleCareerAgent";
 import { hanaDb } from "../db/hana";
 import { requireAuth } from "../middlewares/requireAuth";
 import { sendInternalError } from "../lib/http";
@@ -79,7 +79,7 @@ candidateRouter.post("/onboarding/resume", async (req, res) => {
   }
 });
 
-// 2. Onboarding Joule Interactive Chat with Live Extraction & Database Persistence
+// 2. Onboarding AI Coach Interactive Chat with Live Extraction & Database Persistence
 candidateRouter.post("/onboarding/chat", async (req, res) => {
   try {
     const authenticatedUserId = res.locals.userId as string;
@@ -96,11 +96,11 @@ candidateRouter.post("/onboarding/chat", async (req, res) => {
     let isComplete = false;
 
     try {
-      const extractionPrompt = `You are Joule, the empathetic AI Career Co-Pilot on ReturnPath AI.
+      const extractionPrompt = `You are SensAI Career Coach, an empathetic AI career co-pilot.
 A candidate is currently in a step-by-step onboarding conversation.
 
 Conversation History:
-${(history || []).map((h: any) => `${h.role === "user" ? "Candidate" : "Joule"}: ${h.content}`).join("\n")}
+${(history || []).map((h: any) => `${h.role === "user" ? "Candidate" : "Coach"}: ${h.content}`).join("\n")}
 
 Latest Candidate Message: "${message}"
 Current Turn Number: ${nextStep}
@@ -159,7 +159,7 @@ Return ONLY a valid JSON object matching this schema:
         }
       }
     } catch (err) {
-      console.warn("Joule structured chat fallback:", err);
+      console.warn("AI Coach structured chat fallback:", err);
     }
 
     // Fallback if LLM didn't return reply
@@ -174,7 +174,7 @@ Return ONLY a valid JSON object matching this schema:
         reply = "Excellent. Do you have any career break or pivot context to share? (Reply 'None' if continuous)";
       } else {
         reply =
-          "Wonderful! Your verified profile is ready in SAP Talent Intelligence Hub with 0% break penalty. Click Complete to view your match!";
+          "Wonderful! Your verified profile is ready with 0% career break penalty. Click Complete to view your match!";
         isComplete = true;
       }
     }
@@ -286,7 +286,7 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
     const primaryJob = (await hanaDb.getJob(1)) || {
       id: 1,
       title: profileData.targetRole || "Product Operations Lead",
-      company: profileData.targetCompany || "SAP Labs India",
+      company: profileData.targetCompany || "",
       skills: profileData.skills,
     };
 
@@ -306,7 +306,7 @@ candidateRouter.post("/onboarding/complete", async (req, res) => {
       success: true,
       profile: saved,
       match: match || { overallFitScore: saved.fit || 84 },
-      message: "Onboarding completed and full profile stored in SAP Talent Intelligence Hub.",
+      message: "Onboarding completed and full profile stored successfully.",
     });
   } catch (error) {
     return sendInternalError(res, error, "Onboarding completion failed");
@@ -335,7 +335,7 @@ candidateRouter.put("/profile", async (req, res) => {
       id: `cand_${authenticatedUserId}`,
     };
     const updated = await hanaDb.saveCandidateProfile(profileData);
-    return res.json({ success: true, profile: updated, message: "Profile updated in SAP Talent Hub." });
+    return res.json({ success: true, profile: updated, message: "Profile updated successfully." });
   } catch (error) {
     return sendInternalError(res, error, "Profile update failed");
   }
@@ -357,7 +357,7 @@ candidateRouter.get("/match", async (req, res) => {
         success: true,
         match: profile.latestMatch,
         cached: true,
-        framework: "SAP Inclusive Matching Agent",
+        framework: "Inclusive Matching Agent",
       });
     }
 
@@ -389,7 +389,7 @@ candidateRouter.get("/match", async (req, res) => {
     profile.latestMatch = match;
     await hanaDb.saveCandidateProfile(profile);
 
-    return res.json({ success: true, match, framework: "SAP Inclusive Matching Agent" });
+    return res.json({ success: true, match, framework: "Inclusive Matching Agent" });
   } catch (error) {
     return sendInternalError(res, error, "Candidate match retrieval failed");
   }
@@ -435,8 +435,8 @@ candidateRouter.post("/match/recalculate", async (_req, res) => {
       match,
       fit: match.overallFitScore,
       profile: saved,
-      framework: "SAP Inclusive Matching Agent",
-      message: "Fit score successfully recalculated and saved to SAP Talent Intelligence Hub.",
+      framework: "Inclusive Matching Agent",
+      message: "Fit score successfully recalculated and saved successfully.",
     });
   } catch (error) {
     return sendInternalError(res, error, "Fit score recalculation failed");
@@ -516,7 +516,7 @@ candidateRouter.get("/skills", async (req, res) => {
       name,
       level: 85 + (i % 10),
       evidence: `Demonstrated in ${profile?.title || "Product Operations"}`,
-      relevance: `Direct match for ${profile?.targetCompany || "SAP Labs"}`,
+      relevance: `Direct match for ${profile?.targetCompany || "your target company"}`,
       color: ["#d98459", "#22d3ee", "#a78bfa", "#34d399", "#f59e0b", "#ec4899"][i % 6],
     }));
     return res.json({ success: true, skills });

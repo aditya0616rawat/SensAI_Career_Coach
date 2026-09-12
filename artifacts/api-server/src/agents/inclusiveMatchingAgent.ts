@@ -34,85 +34,68 @@ function cleanAndParseJSON(raw: string): any {
 }
 
 /**
- * Curated mapping of skill/domain competencies to real SAP Learning Hub courses.
+ * Curated mapping of skill/domain competencies to real public learning courses.
  */
-const SAP_LEARNING_CATALOG: Record<
+const LEARNING_CATALOG: Record<
   string,
   { title: string; courseUrl: string; competency: string; hours: number }
 > = {
   sql: {
-    title: "SQL & Relational Data Modeling for Enterprise Decision Makers",
-    courseUrl: "https://learning.sap.com/learning-journeys/explore-sap-hana-cloud-database",
-    competency: "SQL & Enterprise Data Architecture",
+    title: "SQL for Data Analysis — Intermediate SQL Querying",
+    courseUrl: "https://www.coursera.org/learn/sql-for-data-science",
+    competency: "SQL & Relational Data Architecture",
     hours: 5,
   },
   "sql analytics": {
-    title: "Advanced SQL Analytics & Data Querying in SAP HANA Cloud",
-    courseUrl: "https://learning.sap.com/learning-journeys/explore-sap-hana-cloud-database",
+    title: "Advanced SQL for Analytics & Business Intelligence",
+    courseUrl: "https://www.linkedin.com/learning/advanced-sql-for-data-scientists",
     competency: "SQL Analytics & Data Insights",
     hours: 6,
   },
   "program strategy": {
-    title: "Enterprise Product Management & Agile Operating Models with SAP Activate",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-activate-methodology",
+    title: "Product Management & Agile Strategy",
+    courseUrl: "https://www.coursera.org/learn/uva-darden-agile-development",
     competency: "Product Strategy & Agile Execution",
     hours: 6,
   },
   "stakeholder alignment": {
-    title: "Cross-Functional Operating Models & Executive Stakeholder Influence",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-activate-methodology",
+    title: "Stakeholder Management & Communication for Leaders",
+    courseUrl: "https://www.linkedin.com/learning/stakeholder-management",
     competency: "Stakeholder Alignment & Change Management",
     hours: 4,
   },
   "agile execution": {
-    title: "Agile Delivery Leadership with SAP Activate Methodology",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-activate-methodology",
+    title: "Agile Project Management & Scrum",
+    courseUrl: "https://www.coursera.org/learn/agile-development",
     competency: "Agile & Sprint Governance",
     hours: 5,
   },
   python: {
-    title: "Python for Enterprise AI & Data Science on SAP BTP",
-    courseUrl: "https://learning.sap.com/learning-journeys/develop-with-sap-ai-core",
-    competency: "Python for Enterprise AI",
+    title: "Python for Data Science, AI & Development",
+    courseUrl: "https://www.coursera.org/learn/python-for-applied-data-science-ai",
+    competency: "Python for AI & Data Science",
     hours: 7,
   },
-  "sap abap": {
-    title: "ABAP Cloud Development on SAP Business Technology Platform",
-    courseUrl: "https://learning.sap.com/learning-journeys/acquire-core-abap-skills",
-    competency: "SAP ABAP & Cloud Extensibility",
-    hours: 8,
-  },
-  "sap btp": {
-    title: "SAP Business Technology Platform (BTP) Solution Architecture",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-business-technology-platform",
-    competency: "SAP BTP Cloud Architecture",
-    hours: 6,
-  },
-  "s/4hana": {
-    title: "SAP S/4HANA Cloud: Architecture and End-to-End Processes",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-s-4hana-cloud",
-    competency: "SAP S/4HANA Enterprise Architecture",
-    hours: 8,
-  },
   "machine learning": {
-    title: "Building Generative AI Solutions with SAP AI Core & Joule Foundation",
-    courseUrl: "https://learning.sap.com/learning-journeys/develop-with-sap-ai-core",
+    title: "Machine Learning Specialization",
+    courseUrl: "https://www.coursera.org/specializations/machine-learning-introduction",
     competency: "Enterprise Machine Learning & GenAI",
     hours: 8,
   },
   analytics: {
-    title: "SAP Analytics Cloud: Designing Stories, Dashboards & Planning Models",
-    courseUrl: "https://learning.sap.com/learning-journeys/explore-sap-analytics-cloud",
+    title: "Data Analytics & Visualization Fundamentals",
+    courseUrl: "https://www.coursera.org/learn/foundations-of-data",
     competency: "Enterprise Analytics & Visualization",
     hours: 6,
   },
   "change management": {
-    title: "Organizational Transformation & Business Adoption on SAP Projects",
-    courseUrl: "https://learning.sap.com/learning-journeys/discover-sap-activate-methodology",
+    title: "Organizational Change Management",
+    courseUrl: "https://www.linkedin.com/learning/change-management-foundations",
     competency: "Change Management & Org Readiness",
     hours: 5,
   },
 };
+
 
 /**
  * Normalizes an array of skills or skill objects into clean lowercase strings.
@@ -157,8 +140,6 @@ function areSkillsSemanticallyRelated(candidateSkill: string, jobSkill: string):
     "stakeholder alignment": ["cross-functional alignment", "stakeholder management", "change management"],
     python: ["django", "fastapi", "flask", "data science", "machine learning"],
     "react.js": ["react", "frontend", "next.js", "javascript", "typescript"],
-    "sap abap": ["sap", "abap", "s/4hana", "hana", "btp"],
-    "sap btp": ["sap cloud", "cloud platform", "hana", "btp"],
   };
 
   for (const [key, synList] of Object.entries(synonyms)) {
@@ -178,11 +159,11 @@ function areSkillsSemanticallyRelated(candidateSkill: string, jobSkill: string):
 }
 
 /**
- * Resolves a gap to an appropriate SAP Learning Hub course module.
+ * Resolves a gap to an appropriate learning course module.
  */
 function resolveLearningModule(gap: string, weekIndex: number) {
   const normalizedGap = gap.toLowerCase().trim();
-  for (const [key, info] of Object.entries(SAP_LEARNING_CATALOG)) {
+  for (const [key, info] of Object.entries(LEARNING_CATALOG)) {
     if (normalizedGap.includes(key) || key.includes(normalizedGap)) {
       return {
         week: weekIndex + 1,
@@ -198,8 +179,8 @@ function resolveLearningModule(gap: string, weekIndex: number) {
   const capitalised = gap.charAt(0).toUpperCase() + gap.slice(1);
   return {
     week: weekIndex + 1,
-    title: `Enterprise Competency in ${capitalised} (SAP Learning Hub)`,
-    courseUrl: "https://learning.sap.com",
+    title: `${capitalised} — Fundamentals & Practice`,
+    courseUrl: "https://www.coursera.org",
     competencyGained: capitalised,
     hoursRequired: 5,
   };
@@ -257,7 +238,7 @@ function runHeuristicMatch(
   const breakExplanation =
     breakYears > 0
       ? `Evaluated with 0% penalty for ${breakYears}-year career break (${candidate.breakContext || "Personal/Family care"}). Fit score is derived 100% from demonstrated capabilities and project outcomes.`
-      : "Evaluated with 100% objective skills-first methodology under SAP Talent Intelligence Hub governance.";
+      : "Evaluated with 100% objective skills-first methodology.";
 
   const threeWeekBoostProjected = Math.min(
     96,
@@ -266,12 +247,12 @@ function runHeuristicMatch(
 
   // Curate 3-week learning pathway
   const modulesToMap = gapSkills.length > 0 ? gapSkills.slice(0, 3) : ["Enterprise Cloud Architecture"];
-  const sapLearningHubModules = modulesToMap.map((gap, idx) =>
+  const learningModules = modulesToMap.map((gap, idx) =>
     resolveLearningModule(gap, idx)
   );
 
   const jobTitle = typeof job.title === "string" ? job.title : "Target Role";
-  const company = typeof job.company === "string" ? job.company : "SAP Labs India";
+  const company = typeof job.company === "string" ? job.company : "Enterprise Employer";
 
   const matchingStrengths =
     matchedSkills.length > 0
@@ -298,14 +279,14 @@ function runHeuristicMatch(
     evidenceHighlights: evidenceHighlights.length > 0 ? evidenceHighlights : ["Demonstrated self-directed technical execution and continuous learning."],
     skillGaps: gapSkills.length > 0 ? gapSkills : ["No critical skill gaps identified."],
     threeWeekBoostProjected,
-    sapLearningHubModules,
+    learningModules,
   };
 }
 
 export class InclusiveMatchingAgent {
   /**
-   * SAP Inclusive Matching Agent
-   * Matches candidate capability to enterprise job requirements based on verified skills,
+   * Inclusive Matching Agent
+   * Matches candidate capability to job requirements based on verified skills,
    * non-traditional evidence, and transferable capabilities.
    *
    * Actively discounts career break duration (0% penalty) and institution prestige.
@@ -350,14 +331,14 @@ export class InclusiveMatchingAgent {
         const breakYears = Number(candidate.careerBreakYears || 0);
         const breakContext = typeof candidate.breakContext === "string" ? candidate.breakContext : "";
 
-        const prompt = `You are the SAP Inclusive Matching Agent on ReturnPath AI.
-Your role is to evaluate candidate capability against enterprise job requisitions grounded in the SAP Talent Intelligence Hub and SAP SuccessFactors Growth Portfolio.
+        const prompt = `You are the Inclusive Matching Agent on SensAI Career Coach.
+Your role is to evaluate candidate capability against job requisitions based on verified skills, transferable competencies, and demonstrated project evidence.
 
 CRITICAL INCLUSIVE MATCHING PRINCIPLES:
 1. ZERO-PENALTY CAREER BREAK POLICY: Career breaks (for caregiving, family, health, relocation, or learning) MUST receive 0% penalty. Never down-score a candidate for chronological gaps.
 2. CAPABILITY OVER CREDENTIALS: Focus strictly on demonstrable skills, applied projects, code artifacts, and problem-solving. Disregard university prestige or brand-name past employers.
 3. TRANSFERABLE SKILL RECOGNITION: Actively recognize synonymous, adjacent, and transferable technical capabilities (e.g. SQL and relational databases; Scrum and agile delivery; frontend state and UI design).
-4. PRESCRIBE 3-WEEK BRIDGE: For any identified gaps, prescribe a realistic 3-week learning pathway with SAP Learning Hub course modules so the candidate can elevate their readiness.
+4. PRESCRIBE 3-WEEK BRIDGE: For any identified gaps, prescribe a realistic 3-week learning pathway with course modules (from Coursera, LinkedIn Learning, or similar platforms) so the candidate can elevate their readiness.
 
 ==================================================
 CANDIDATE CAPABILITY PROFILE:
@@ -391,25 +372,25 @@ Return a valid JSON object ONLY. Adhere strictly to this schema:
   "evidenceHighlights": ["string citing specific project or experience evidence"],
   "skillGaps": ["string", "string"],
   "threeWeekBoostProjected": number (projected fit score after completing the 3-week bridge, e.g. 91-96),
-  "sapLearningHubModules": [
+  "learningModules": [
     {
       "week": 1,
-      "title": "string (Specific course title on SAP Learning Hub)",
-      "courseUrl": "https://learning.sap.com",
+      "title": "string (Specific course title, e.g. from Coursera or LinkedIn Learning)",
+      "courseUrl": "https://www.coursera.org",
       "competencyGained": "string",
       "hoursRequired": number (between 4 and 8)
     },
     {
       "week": 2,
       "title": "string",
-      "courseUrl": "https://learning.sap.com",
+      "courseUrl": "https://www.coursera.org",
       "competencyGained": "string",
       "hoursRequired": number
     },
     {
       "week": 3,
       "title": "string",
-      "courseUrl": "https://learning.sap.com",
+      "courseUrl": "https://www.coursera.org",
       "competencyGained": "string",
       "hoursRequired": number
     }
@@ -475,9 +456,9 @@ Return a valid JSON object ONLY. Adhere strictly to this schema:
                       100,
                       Math.max(parsed.overallFitScore, parsed.threeWeekBoostProjected || 92)
                     ),
-                    sapLearningHubModules: Array.isArray(parsed.sapLearningHubModules) &&
-                    parsed.sapLearningHubModules.length > 0
-                      ? parsed.sapLearningHubModules
+                    learningModules: Array.isArray(parsed.learningModules) &&
+                    parsed.learningModules.length > 0
+                      ? parsed.learningModules
                       : [
                           resolveLearningModule("SQL", 0),
                           resolveLearningModule("Stakeholder Alignment", 1),

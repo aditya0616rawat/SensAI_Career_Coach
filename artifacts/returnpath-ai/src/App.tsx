@@ -475,33 +475,33 @@ const candidates: Candidate[] = [
   { id: 12, name: 'Clara Evans', title: 'Business Systems Analyst', location: 'Minneapolis, MN', fit: 83, skills: ['Workday', 'Process mapping', 'UAT'], lastRole: 'Systems, Alder', break: '2020–2021 · Relocation', verified: 89, initials: 'CE', color: '#bc7f79' },
   { id: 13, name: 'Marco Silva', title: 'Growth Strategy Manager', location: 'Miami, FL', fit: 76, skills: ['Go-to-market', 'Pricing', 'Research'], lastRole: 'Growth, Tidepool', break: '2022–2023 · Study', verified: 82, initials: 'MS', color: '#7d8fae' },
   { id: 14, name: 'June Park', title: 'Learning Experience Lead', location: 'San Francisco, CA', fit: 87, skills: ['Curriculum', 'Facilitation', 'LMS'], lastRole: 'L&D, Parable', break: '2021–2022 · Caregiving', verified: 94, initials: 'JP', color: '#ae8b61' },
-  { id: 15, name: 'Samira Adeyemi', title: 'Finance Transformation Lead', location: 'Charlotte, NC', fit: 90, skills: ['SAP S/4HANA', 'Controls', 'Transformation'], lastRole: 'Finance, Meridian', break: '2022–2024 · Relocation', verified: 98, initials: 'SA', color: '#658c87' },
+  { id: 15, name: 'Samira Adeyemi', title: 'Finance Transformation Lead', location: 'Charlotte, NC', fit: 90, skills: ['ERP Systems', 'Controls', 'Transformation'], lastRole: 'Finance, Meridian', break: '2022–2024 · Relocation', verified: 98, initials: 'SA', color: '#658c87' },
 ];
 const jobs: Job[] = [
-  { id: 1, title: 'Product Operations Lead', company: 'SAP Labs', location: 'Palo Alto, CA', mode: 'Hybrid', fit: 84, posted: '2 days ago', salary: '$128k–$154k', skills: ['Program strategy', 'Stakeholder alignment', 'SQL'], blurb: 'Build the operating rhythm behind products that make work more human.' },
+  { id: 1, title: 'Product Operations Lead', company: 'enterprise companies', location: 'Palo Alto, CA', mode: 'Hybrid', fit: 84, posted: '2 days ago', salary: '$128k–$154k', skills: ['Program strategy', 'Stakeholder alignment', 'SQL'], blurb: 'Build the operating rhythm behind products that make work more human.' },
   { id: 2, title: 'Workforce Insights Manager', company: 'Northstar Health', location: 'Remote · US', mode: 'Remote', fit: 78, posted: '4 days ago', salary: '$118k–$142k', skills: ['People analytics', 'Power BI', 'Storytelling'], blurb: 'Turn workforce signals into decisions leaders can act on.' },
   { id: 3, title: 'Senior Program Manager, Trust', company: 'Harborline', location: 'New York, NY', mode: 'Hybrid', fit: 73, posted: '1 week ago', salary: '$135k–$165k', skills: ['Risk', 'Roadmaps', 'Change management'], blurb: 'Shape the systems that help customers trust what comes next.' },
   { id: 4, title: 'Business Systems Partner', company: 'Mosaic Commerce', location: 'Austin, TX', mode: 'Flexible', fit: 80, posted: '1 week ago', salary: '$110k–$134k', skills: ['Workday', 'Process mapping', 'UAT'], blurb: 'Make the invisible infrastructure of a growing team work beautifully.' },
   { id: 5, title: 'Customer Strategy Director', company: 'Cedar & Co.', location: 'Chicago, IL', mode: 'Hybrid', fit: 76, posted: '2 weeks ago', salary: '$142k–$176k', skills: ['Research', 'Service design', 'Leadership'], blurb: 'Give every customer moment a clear point of view.' },
   { id: 6, title: 'RevOps Strategy Manager', company: 'Vela Systems', location: 'Remote · US', mode: 'Remote', fit: 86, posted: '2 weeks ago', salary: '$121k–$149k', skills: ['Salesforce', 'SQL', 'Forecasting'], blurb: 'Design the connective tissue between revenue teams and growth.' },
   { id: 7, title: 'Learning Programs Lead', company: 'Juniper Group', location: 'Boston, MA', mode: 'Hybrid', fit: 79, posted: '3 weeks ago', salary: '$105k–$128k', skills: ['Curriculum', 'Facilitation', 'LMS'], blurb: 'Help people build careers that have room for the whole person.' },
-  { id: 8, title: 'Finance Transformation Principal', company: 'Meridian Works', location: 'Charlotte, NC', mode: 'On-site', fit: 82, posted: '3 weeks ago', salary: '$156k–$188k', skills: ['SAP S/4HANA', 'Controls', 'Transformation'], blurb: 'Lead thoughtful change across finance, data, and enterprise systems.' },
+  { id: 8, title: 'Finance Transformation Principal', company: 'Meridian Works', location: 'Charlotte, NC', mode: 'On-site', fit: 82, posted: '3 weeks ago', salary: '$156k–$188k', skills: ['ERP Systems', 'Controls', 'Transformation'], blurb: 'Lead thoughtful change across finance, data, and enterprise systems.' },
 ];
 const mockApplications: Job[] = jobs.concat([
   { ...jobs[0], id: 9, title: 'Operations Strategy Partner', company: 'Brightwell', posted: '1 month ago' },
   { ...jobs[1], id: 10, title: 'Senior People Insights Lead', company: 'Kite & Finch', posted: '1 month ago' },
 ]);
-const skillCatalog = ['Program strategy', 'SQL', 'Change management', 'Power BI', 'Forecasting', 'Python', 'Journey mapping', 'Research', 'Service design', 'Roadmaps', 'Risk', 'Agile delivery', 'Salesforce', 'Process design', 'Positioning', 'Launch', 'ERP', 'Enablement', 'Client success', 'Lean', 'Analytics', 'Facilitation', 'Figma', 'Systems thinking', 'People data', 'Storytelling', 'Statistics', 'Cloud', 'Workday', 'Process mapping', 'UAT', 'Go-to-market', 'Pricing', 'Curriculum', 'LMS', 'SAP S/4HANA', 'Controls', 'Transformation', 'Stakeholder alignment'];
+const skillCatalog = ['Program strategy', 'SQL', 'Change management', 'Power BI', 'Forecasting', 'Python', 'Journey mapping', 'Research', 'Service design', 'Roadmaps', 'Risk', 'Agile delivery', 'Salesforce', 'Process design', 'Positioning', 'Launch', 'ERP', 'Enablement', 'Client success', 'Lean', 'Analytics', 'Facilitation', 'Figma', 'Systems thinking', 'People data', 'Storytelling', 'Statistics', 'Cloud', 'Workday', 'Process mapping', 'UAT', 'Go-to-market', 'Pricing', 'Curriculum', 'LMS', 'ERP Systems', 'Controls', 'Transformation', 'Stakeholder alignment'];
 const modules = [
-  { id: 1, title: 'SQL for decision makers', provider: 'SAP Learning', duration: '4h 20m', kind: 'Course', color: '#d98459' },
+  { id: 1, title: 'SQL for decision makers', provider: 'Learning Hub', duration: '4h 20m', kind: 'Course', color: '#d98459' },
   { id: 2, title: 'Influence without authority', provider: 'ReturnPath studio', duration: '2h 10m', kind: 'Workshop', color: '#5d8c89' },
-  { id: 3, title: 'Modern operating rhythms', provider: 'SAP Learning', duration: '3h 40m', kind: 'Course', color: '#9b7a9d' },
+  { id: 3, title: 'Modern operating rhythms', provider: 'Learning Hub', duration: '3h 40m', kind: 'Course', color: '#9b7a9d' },
   { id: 4, title: 'Tell your return story', provider: 'ReturnPath studio', duration: '55m', kind: 'Practice', color: '#c4865d' },
-  { id: 5, title: 'Power BI essentials', provider: 'SAP Learning', duration: '5h 15m', kind: 'Course', color: '#688c7c' },
+  { id: 5, title: 'Power BI essentials', provider: 'Learning Hub', duration: '5h 15m', kind: 'Course', color: '#688c7c' },
   { id: 6, title: 'Stakeholder mapping lab', provider: 'ReturnPath studio', duration: '1h 30m', kind: 'Lab', color: '#6c8db5' },
-  { id: 7, title: 'Responsible AI at work', provider: 'SAP Learning', duration: '2h', kind: 'Course', color: '#ae8b61' },
+  { id: 7, title: 'Responsible AI at work', provider: 'Learning Hub', duration: '2h', kind: 'Course', color: '#ae8b61' },
   { id: 8, title: 'Resume evidence clinic', provider: 'ReturnPath studio', duration: '45m', kind: 'Practice', color: '#bc7f79' },
-  { id: 9, title: 'Forecasting in practice', provider: 'SAP Learning', duration: '3h 10m', kind: 'Course', color: '#7d8fae' },
+  { id: 9, title: 'Forecasting in practice', provider: 'Learning Hub', duration: '3h 10m', kind: 'Course', color: '#7d8fae' },
   { id: 10, title: 'Interview rehearsal', provider: 'ReturnPath studio', duration: '1h', kind: 'Practice', color: '#658c87' },
 ];
 
@@ -713,7 +713,7 @@ function PublicFooter() {
 function Landing() {
   usePageMeta('Your next step, made clear', 'ReturnPath AI helps career returners and employers make capability visible.');
   return <div className="noise"><PublicNav /><main>
-    <section className="relative overflow-hidden border-b border-[hsl(var(--border))]"><div className="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-20 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-8 lg:pb-28 lg:pt-28"><div className="stagger"><p className="eyebrow text-[hsl(var(--primary))]">Workforce intelligence for the return journey</p><h1 className="mt-5 max-w-3xl font-display text-5xl leading-[.98] tracking-[-.04em] sm:text-6xl lg:text-[78px]">Your next step,<br /><span className="text-[hsl(var(--primary))]">made clear.</span></h1><p className="mt-7 max-w-xl text-lg leading-8 text-[hsl(var(--muted-foreground))]">A career break should not erase capability. ReturnPath AI gives people a grounded way back — and gives hiring teams a sharper, fairer way forward.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/candidate/onboarding" data-testid="link-hero-start" className="inline-flex min-h-12 items-center rounded-lg bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Find your next step <ArrowRight size={16} className="ml-2" /></Link><Link href="/recruiter" data-testid="link-hero-recruiter" className="inline-flex min-h-12 items-center rounded-lg border border-[hsl(var(--border))] px-5 text-sm font-semibold">For hiring teams</Link></div><div className="mt-9 flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]"><ShieldCheck size={17} className="text-[hsl(var(--primary))]" /> Built around transparent, human-reviewed recommendations</div></div><div className="relative min-h-[390px]"><div className="absolute right-0 top-0 h-full w-[92%] rounded-[28px] bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] shadow-[var(--shadow-md)] sm:p-8"><div className="flex items-center justify-between"><div><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/50">Maya's return map</p><p className="mt-2 font-display text-2xl">A plan that sees the whole picture.</p></div><div className="rounded-full border border-[hsl(var(--sidebar-foreground))]/20 p-2"><Radar size={19} /></div></div><div className="mt-8 grid grid-cols-[auto_1fr] gap-5"><Score value={84} size="lg" /><div><p className="text-sm font-semibold">Product Operations Lead</p><p className="mt-1 text-xs text-[hsl(var(--sidebar-foreground))]/55">Palo Alto · Hybrid · SAP Labs</p><div className="mt-5 space-y-3"><div><div className="mb-1 flex justify-between text-[11px]"><span className="text-[hsl(var(--sidebar-foreground))]/65">Verified skills</span><span>91%</span></div><Progress value={91} color="bg-[hsl(var(--accent))]" /></div><div><div className="mb-1 flex justify-between text-[11px]"><span className="text-[hsl(var(--sidebar-foreground))]/65">Role alignment</span><span>84%</span></div><Progress value={84} color="bg-[#7bb3a4]" /></div></div></div></div><div className="mt-8 rounded-xl border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 p-4"><div className="flex items-center gap-2 text-xs"><CheckCircle2 size={15} className="text-[hsl(var(--accent))]" /> Career break treated neutrally</div><div className="mt-3 flex items-center gap-2 text-xs"><CheckCircle2 size={15} className="text-[hsl(var(--accent))]" /> Three-week path to close the signal gap</div></div></div><div className="absolute -bottom-3 left-0 w-52 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-md)]"><p className="eyebrow">Next best action</p><p className="mt-2 text-sm font-semibold">Complete SQL practice</p><p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">+7 fit points projected</p></div></div></div></section>
+    <section className="relative overflow-hidden border-b border-[hsl(var(--border))]"><div className="mx-auto grid max-w-7xl gap-12 px-5 pb-20 pt-20 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:px-8 lg:pb-28 lg:pt-28"><div className="stagger"><p className="eyebrow text-[hsl(var(--primary))]">Workforce intelligence for the return journey</p><h1 className="mt-5 max-w-3xl font-display text-5xl leading-[.98] tracking-[-.04em] sm:text-6xl lg:text-[78px]">Your next step,<br /><span className="text-[hsl(var(--primary))]">made clear.</span></h1><p className="mt-7 max-w-xl text-lg leading-8 text-[hsl(var(--muted-foreground))]">A career break should not erase capability. ReturnPath AI gives people a grounded way back — and gives hiring teams a sharper, fairer way forward.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/candidate/onboarding" data-testid="link-hero-start" className="inline-flex min-h-12 items-center rounded-lg bg-[hsl(var(--primary))] px-5 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Find your next step <ArrowRight size={16} className="ml-2" /></Link><Link href="/recruiter" data-testid="link-hero-recruiter" className="inline-flex min-h-12 items-center rounded-lg border border-[hsl(var(--border))] px-5 text-sm font-semibold">For hiring teams</Link></div><div className="mt-9 flex items-center gap-3 text-xs text-[hsl(var(--muted-foreground))]"><ShieldCheck size={17} className="text-[hsl(var(--primary))]" /> Built around transparent, human-reviewed recommendations</div></div><div className="relative min-h-[390px]"><div className="absolute right-0 top-0 h-full w-[92%] rounded-[28px] bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))] shadow-[var(--shadow-md)] sm:p-8"><div className="flex items-center justify-between"><div><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/50">Maya's return map</p><p className="mt-2 font-display text-2xl">A plan that sees the whole picture.</p></div><div className="rounded-full border border-[hsl(var(--sidebar-foreground))]/20 p-2"><Radar size={19} /></div></div><div className="mt-8 grid grid-cols-[auto_1fr] gap-5"><Score value={84} size="lg" /><div><p className="text-sm font-semibold">Product Operations Lead</p><p className="mt-1 text-xs text-[hsl(var(--sidebar-foreground))]/55">Palo Alto · Hybrid</p><div className="mt-5 space-y-3"><div><div className="mb-1 flex justify-between text-[11px]"><span className="text-[hsl(var(--sidebar-foreground))]/65">Verified skills</span><span>91%</span></div><Progress value={91} color="bg-[hsl(var(--accent))]" /></div><div><div className="mb-1 flex justify-between text-[11px]"><span className="text-[hsl(var(--sidebar-foreground))]/65">Role alignment</span><span>84%</span></div><Progress value={84} color="bg-[#7bb3a4]" /></div></div></div></div><div className="mt-8 rounded-xl border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 p-4"><div className="flex items-center gap-2 text-xs"><CheckCircle2 size={15} className="text-[hsl(var(--accent))]" /> Career break treated neutrally</div><div className="mt-3 flex items-center gap-2 text-xs"><CheckCircle2 size={15} className="text-[hsl(var(--accent))]" /> Three-week path to close the signal gap</div></div></div><div className="absolute -bottom-3 left-0 w-52 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-[var(--shadow-md)]"><p className="eyebrow">Next best action</p><p className="mt-2 text-sm font-semibold">Complete SQL practice</p><p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">+7 fit points projected</p></div></div></div></section>
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p className="eyebrow">A different kind of intelligence</p><h2 className="mt-4 max-w-md font-display text-4xl leading-tight">The gap is in the record. Not in the person.</h2></div><div className="grid gap-4 sm:grid-cols-2"><div className="surface rounded-2xl p-6"><div className="mb-5 grid h-10 w-10 place-items-center rounded-xl bg-[#e1f0ea] text-[hsl(var(--primary))]"><FileCheck2 size={19} /></div><h3 className="font-semibold">Capability, made visible</h3><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Skill evidence, context, and progress create a fuller signal than a timeline alone.</p></div><div className="surface rounded-2xl p-6"><div className="mb-5 grid h-10 w-10 place-items-center rounded-xl bg-[#f8e6cf] text-[#925d26]"><UsersRound size={19} /></div><h3 className="font-semibold">Human judgment, intact</h3><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Recommendations show their work. People make the call.</p></div></div></div></section>
     <section className="bg-[#dfe9e4] px-5 py-20 lg:px-8"><div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.15fr_.85fr] lg:items-end"><div><p className="eyebrow text-[hsl(var(--primary))]">The return journey</p><h2 className="mt-4 max-w-2xl font-display text-4xl leading-tight lg:text-5xl">From “where do I start?” to “I know why this fits.”</h2></div><div className="grid gap-3"><div className="flex gap-4 border-l-2 border-[hsl(var(--primary))] pl-5"><span className="font-data text-xs text-[hsl(var(--primary))]">01</span><div><p className="font-semibold">See your signal</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">A skills passport that values evidence over recency.</p></div></div><div className="flex gap-4 border-l-2 border-[hsl(var(--primary))]/35 pl-5"><span className="font-data text-xs text-[hsl(var(--primary))]">02</span><div><p className="font-semibold">Build the bridge</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">A focused learning path tied to a real role you want.</p></div></div><div className="flex gap-4 border-l-2 border-[hsl(var(--primary))]/35 pl-5"><span className="font-data text-xs text-[hsl(var(--primary))]">03</span><div><p className="font-semibold">Move with proof</p><p className="mt-1 text-sm text-[hsl(var(--muted-foreground))]">A clearer resume, a stronger application, and a recruiter who can explain the fit.</p></div></div></div></div></section>
     <section className="mx-auto max-w-7xl px-5 py-20 lg:px-8"><div className="rounded-[28px] bg-[hsl(var(--sidebar))] px-6 py-12 text-center text-[hsl(var(--sidebar-foreground))] sm:px-12"><p className="eyebrow text-[hsl(var(--accent))]">Ready when you are</p><h2 className="mx-auto mt-4 max-w-2xl font-display text-4xl leading-tight">Your experience did not disappear. Let’s give it a better signal.</h2><Link href="/candidate/onboarding" data-testid="link-bottom-start" className="mt-8 inline-flex min-h-12 items-center rounded-lg bg-[hsl(var(--accent))] px-5 text-sm font-semibold text-[hsl(var(--foreground))]">Build my return map <ArrowRight size={16} className="ml-2" /></Link></div></section>
@@ -741,7 +741,7 @@ function HowContent() {
 function PricingPage() {
   const [selected, setSelected] = useState('Returner');
   usePageMeta('Pricing', 'Simple plans for returners and hiring teams.');
-  return <div className="noise"><PublicNav /><main className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p className="eyebrow text-[hsl(var(--primary))]">Plans for every side of the table</p><h1 className="mt-5 max-w-2xl font-display text-5xl leading-tight">A fairer way to move forward.</h1><p className="mt-6 max-w-xl text-lg text-[hsl(var(--muted-foreground))]">Start with clarity. Add the intelligence your team needs when you are ready.</p><div className="mt-10 inline-flex rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1"><button onClick={() => setSelected('Returner')} data-testid="button-pricing-returner" className={`rounded-md px-4 py-2 text-sm font-semibold ${selected === 'Returner' ? 'bg-[hsl(var(--sidebar))] text-white' : ''}`}>For returners</button><button onClick={() => setSelected('Employer')} data-testid="button-pricing-employer" className={`rounded-md px-4 py-2 text-sm font-semibold ${selected === 'Employer' ? 'bg-[hsl(var(--sidebar))] text-white' : ''}`}>For employers</button></div><div className="mt-10 grid gap-4 lg:grid-cols-3">{(selected === 'Returner' ? [{ name: 'Open Door', price: 'Free', copy: 'A thoughtful place to begin.', features: ['Skills passport', 'Role fit signals', 'Three saved roles'] }, { name: 'ReturnPath Plus', price: '$12', copy: 'For a focused return.', features: ['Everything in Open Door', 'Guided learning paths', 'Resume evidence clinic'] }, { name: 'Co-pilot', price: '$29', copy: 'A deeper practice partner.', features: ['Everything in Plus', 'Interview rehearsal', 'Priority support'] }] : [{ name: 'Pilot', price: '$0', copy: 'See the signal in a small team.', features: ['Up to 10 open roles', 'Candidate explainability', 'Fairness snapshot'] }, { name: 'Workforce', price: '$1,850', copy: 'Move faster without losing care.', features: ['Unlimited roles', 'Bias audit workspace', 'Hiring analytics'] }, { name: 'Enterprise', price: 'Let’s talk', copy: 'Built around your governance.', features: ['SAP architecture review', 'Custom readiness program', 'Dedicated success partner'] }]).map((plan, i) => <div key={plan.name} className={`surface rounded-2xl p-7 ${i === 1 ? 'border-2 border-[hsl(var(--primary))] shadow-[var(--shadow-md)]' : ''}`}><div className="flex items-start justify-between"><div><h2 className="font-display text-2xl">{plan.name}</h2><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{plan.copy}</p></div>{i === 1 && <Badge tone="good">Most chosen</Badge>}</div><p className="mt-8 font-data text-3xl">{plan.price}<span className="font-sans text-sm text-[hsl(var(--muted-foreground))]">{plan.price.startsWith('$') && plan.price !== '$0' && plan.price !== '$1,850' ? ' / month' : ''}</span></p><div className="my-7 border-t border-[hsl(var(--border))]" /><div className="grid gap-3 text-sm">{plan.features.map(f => <div key={f} className="flex items-center gap-2"><Check size={15} className="text-[hsl(var(--primary))]" />{f}</div>)}</div><Button onClick={() => window.alert(`${plan.name} selected for this prototype`)} data-testid={`button-select-plan-${i}`} variant={i === 1 ? 'primary' : 'outline'} className="mt-8 w-full">{plan.price === 'Let’s talk' ? 'Talk with us' : 'Choose plan'}</Button></div>)}</div></main><PublicFooter /></div>;
+  return <div className="noise"><PublicNav /><main className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p className="eyebrow text-[hsl(var(--primary))]">Plans for every side of the table</p><h1 className="mt-5 max-w-2xl font-display text-5xl leading-tight">A fairer way to move forward.</h1><p className="mt-6 max-w-xl text-lg text-[hsl(var(--muted-foreground))]">Start with clarity. Add the intelligence your team needs when you are ready.</p><div className="mt-10 inline-flex rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-1"><button onClick={() => setSelected('Returner')} data-testid="button-pricing-returner" className={`rounded-md px-4 py-2 text-sm font-semibold ${selected === 'Returner' ? 'bg-[hsl(var(--sidebar))] text-white' : ''}`}>For returners</button><button onClick={() => setSelected('Employer')} data-testid="button-pricing-employer" className={`rounded-md px-4 py-2 text-sm font-semibold ${selected === 'Employer' ? 'bg-[hsl(var(--sidebar))] text-white' : ''}`}>For employers</button></div><div className="mt-10 grid gap-4 lg:grid-cols-3">{(selected === 'Returner' ? [{ name: 'Open Door', price: 'Free', copy: 'A thoughtful place to begin.', features: ['Skills passport', 'Role fit signals', 'Three saved roles'] }, { name: 'ReturnPath Plus', price: '$12', copy: 'For a focused return.', features: ['Everything in Open Door', 'Guided learning paths', 'Resume evidence clinic'] }, { name: 'Co-pilot', price: '$29', copy: 'A deeper practice partner.', features: ['Everything in Plus', 'Interview rehearsal', 'Priority support'] }] : [{ name: 'Pilot', price: '$0', copy: 'See the signal in a small team.', features: ['Up to 10 open roles', 'Candidate explainability', 'Fairness snapshot'] }, { name: 'Workforce', price: '$1,850', copy: 'Move faster without losing care.', features: ['Unlimited roles', 'Bias audit workspace', 'Hiring analytics'] }, { name: 'Enterprise', price: 'Let’s talk', copy: 'Built around your governance.', features: ['Platform architecture review', 'Custom readiness program', 'Dedicated success partner'] }]).map((plan, i) => <div key={plan.name} className={`surface rounded-2xl p-7 ${i === 1 ? 'border-2 border-[hsl(var(--primary))] shadow-[var(--shadow-md)]' : ''}`}><div className="flex items-start justify-between"><div><h2 className="font-display text-2xl">{plan.name}</h2><p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{plan.copy}</p></div>{i === 1 && <Badge tone="good">Most chosen</Badge>}</div><p className="mt-8 font-data text-3xl">{plan.price}<span className="font-sans text-sm text-[hsl(var(--muted-foreground))]">{plan.price.startsWith('$') && plan.price !== '$0' && plan.price !== '$1,850' ? ' / month' : ''}</span></p><div className="my-7 border-t border-[hsl(var(--border))]" /><div className="grid gap-3 text-sm">{plan.features.map(f => <div key={f} className="flex items-center gap-2"><Check size={15} className="text-[hsl(var(--primary))]" />{f}</div>)}</div><Button onClick={() => window.alert(`${plan.name} selected for this prototype`)} data-testid={`button-select-plan-${i}`} variant={i === 1 ? 'primary' : 'outline'} className="mt-8 w-full">{plan.price === 'Let’s talk' ? 'Talk with us' : 'Choose plan'}</Button></div>)}</div></main><PublicFooter /></div>;
 }
 function ArchitecturePage() {
   return <div className="noise"><PublicNav /><main className="mx-auto max-w-7xl px-5 py-20 lg:px-8 lg:py-28"><p className="eyebrow text-[hsl(var(--primary))]">The ReturnPath architecture</p><h1 className="mt-5 max-w-3xl font-display text-5xl leading-tight">Trust is a system property.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-[hsl(var(--muted-foreground))]">A transparent intelligence layer that keeps people, evidence, and accountability connected.</p><div className="mt-14 grid gap-4 lg:grid-cols-[.8fr_1.2fr]"><div className="rounded-2xl bg-[hsl(var(--sidebar))] p-7 text-[hsl(var(--sidebar-foreground))]"><p className="eyebrow text-[hsl(var(--accent))]">Decision boundary</p><h2 className="mt-4 font-display text-3xl">AI recommends.<br />Recruiter decides.</h2><p className="mt-5 text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/65">Signals are inspectable. Career breaks are excluded from fit scoring. Every shortlist action leaves a human review trace.</p></div><div className="surface rounded-2xl p-7"><div className="grid gap-3 sm:grid-cols-2">{[['Candidate signal', 'Skills passport + intent', UserRound], ['Fit engine', 'Evidence-weighted match', Radar], ['Learning bridge', 'Role-specific path', GraduationCap], ['Human review', 'Reason + decision trace', ShieldCheck], ['Fairness monitor', 'Outcome parity checks', BarChart3], ['Employer readiness', 'Team context + access', Building2]].map(([title, desc, Icon]) => { const I = Icon as typeof UserRound; return <div key={title as string} className="rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background))] p-4"><I size={18} className="text-[hsl(var(--primary))]" /><p className="mt-4 text-sm font-semibold">{title as string}</p><p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">{desc as string}</p></div>; })}</div></div></div><div className="mt-10 rounded-2xl border border-[hsl(var(--border))] p-7"><p className="eyebrow">Data flow · mock environment</p><div className="mt-7 flex flex-wrap items-center justify-center gap-3 text-sm">{['Experience', 'Signal extraction', 'Fit + gaps', 'Human review', 'Next step'].map((item, i) => <div key={item} className="flex items-center gap-3"><div className={`rounded-lg px-4 py-3 font-semibold ${i === 4 ? 'bg-[hsl(var(--accent))]' : 'bg-[hsl(var(--secondary))]'}`}>{item}</div>{i < 4 && <ArrowRight size={15} className="text-[hsl(var(--muted-foreground))]" />}</div>)}</div></div></main><PublicFooter /></div>;
@@ -825,7 +825,7 @@ function WorkspaceShell({ role, children }: { role: 'candidate' | 'recruiter'; c
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`
     : (role === 'candidate' ? (p.profile?.name ? p.profile.name.slice(0, 2).toUpperCase() : 'CD') : 'HT');
 
-  return <div className="min-h-[100dvh] bg-[hsl(var(--background))]"><aside className={`fixed inset-y-0 left-0 z-30 w-[245px] bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}><div className="flex items-center justify-between"><Logo light /><button onClick={() => setMobileOpen(false)} data-testid="button-close-sidebar" className="md:hidden"><X size={18} /></button></div><div className="mt-10"><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/45">{role === 'candidate' ? 'My workspace' : 'Talent workspace'}</p><nav className="mt-3 grid gap-1">{nav.map(([href, label, Icon]) => <Link href={href} key={href} onClick={() => setMobileOpen(false)} data-testid={`nav-${label.toLowerCase().replaceAll(' ', '-')}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${location === href ? 'bg-[hsl(var(--sidebar-foreground))]/12 text-[hsl(var(--accent))]' : 'text-[hsl(var(--sidebar-foreground))]/65 hover:bg-[hsl(var(--sidebar-foreground))]/8 hover:text-[hsl(var(--sidebar-foreground))]'}`}><Icon size={17} />{label}</Link>)}</nav></div><div className="absolute bottom-5 left-5 right-5 space-y-2"><div className="rounded-xl border border-[hsl(var(--sidebar-foreground))]/12 bg-[hsl(var(--sidebar-foreground))]/5 p-3"><div className="flex items-center gap-2 text-xs"><ShieldCheck size={15} className="text-[hsl(var(--accent))]" /> <span>SAP BTP Verified</span></div><p className="mt-2 text-[11px] leading-4 text-[hsl(var(--sidebar-foreground))]/45">100% Skills-First & Bias Neutral.</p></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="sidebar-button-sign-out" className="flex w-full items-center justify-center gap-2 rounded-lg border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 py-2 text-xs font-semibold text-[hsl(var(--sidebar-foreground))]/70 transition hover:bg-[hsl(var(--sidebar-foreground))]/10 hover:text-white"><LogOut size={14} /><span>Sign out</span></button></div></aside><div className="md:pl-[245px]"><header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 px-5 backdrop-blur lg:px-8"><button onClick={() => setMobileOpen(true)} data-testid="button-open-sidebar" className="rounded-lg p-2 md:hidden"><Menu size={21} /></button><div className="hidden md:block"><p className="eyebrow">{role === 'candidate' ? 'Candidate workspace · SAP Talent Hub' : 'Recruiter workspace · SAP SuccessFactors'}</p></div><div className="ml-auto flex items-center gap-3"><button data-testid="button-notifications" className="rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"><Bell size={18} /></button><div className="flex items-center gap-2 border-l border-[hsl(var(--border))] pl-3">{user?.imageUrl ? <img src={user.imageUrl} alt={displayName} className="h-8 w-8 rounded-full border border-[hsl(var(--border))]" /> : <div className="grid h-8 w-8 place-items-center rounded-full bg-[#d98459] text-xs font-semibold text-white">{initials}</div>}<span className="hidden text-sm font-semibold sm:block">{displayName}</span></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="button-sign-out" title="Sign out" className="ml-1 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]/80 px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--destructive))]/40 hover:bg-[hsl(var(--destructive))]/10 hover:text-[hsl(var(--destructive))]"><LogOut size={14} /><span className="hidden sm:inline">Sign out</span></button></div></header><main className="mx-auto max-w-[1440px] px-5 py-8 lg:px-9 lg:py-10">{children}</main></div></div>;
+  return <div className="min-h-[100dvh] bg-[hsl(var(--background))]"><aside className={`fixed inset-y-0 left-0 z-30 w-[245px] bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] transition-transform duration-200 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}><div className="flex items-center justify-between"><Logo light /><button onClick={() => setMobileOpen(false)} data-testid="button-close-sidebar" className="md:hidden"><X size={18} /></button></div><div className="mt-10"><p className="eyebrow text-[hsl(var(--sidebar-foreground))]/45">{role === 'candidate' ? 'My workspace' : 'Talent workspace'}</p><nav className="mt-3 grid gap-1">{nav.map(([href, label, Icon]) => <Link href={href} key={href} onClick={() => setMobileOpen(false)} data-testid={`nav-${label.toLowerCase().replaceAll(' ', '-')}`} className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${location === href ? 'bg-[hsl(var(--sidebar-foreground))]/12 text-[hsl(var(--accent))]' : 'text-[hsl(var(--sidebar-foreground))]/65 hover:bg-[hsl(var(--sidebar-foreground))]/8 hover:text-[hsl(var(--sidebar-foreground))]'}`}><Icon size={17} />{label}</Link>)}</nav></div><div className="absolute bottom-5 left-5 right-5 space-y-2"><div className="rounded-xl border border-[hsl(var(--sidebar-foreground))]/12 bg-[hsl(var(--sidebar-foreground))]/5 p-3"><div className="flex items-center gap-2 text-xs"><ShieldCheck size={15} className="text-[hsl(var(--accent))]" /> <span>AI-Verified</span></div><p className="mt-2 text-[11px] leading-4 text-[hsl(var(--sidebar-foreground))]/45">100% Skills-First & Bias Neutral.</p></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="sidebar-button-sign-out" className="flex w-full items-center justify-center gap-2 rounded-lg border border-[hsl(var(--sidebar-foreground))]/15 bg-[hsl(var(--sidebar-foreground))]/5 py-2 text-xs font-semibold text-[hsl(var(--sidebar-foreground))]/70 transition hover:bg-[hsl(var(--sidebar-foreground))]/10 hover:text-white"><LogOut size={14} /><span>Sign out</span></button></div></aside><div className="md:pl-[245px]"><header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 px-5 backdrop-blur lg:px-8"><button onClick={() => setMobileOpen(true)} data-testid="button-open-sidebar" className="rounded-lg p-2 md:hidden"><Menu size={21} /></button><div className="hidden md:block"><p className="eyebrow">{role === 'candidate' ? 'Candidate workspace · Skills Hub' : 'Recruiter workspace · SensAI Platform'}</p></div><div className="ml-auto flex items-center gap-3"><button data-testid="button-notifications" className="rounded-lg p-2 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))] hover:text-[hsl(var(--foreground))]"><Bell size={18} /></button><div className="flex items-center gap-2 border-l border-[hsl(var(--border))] pl-3">{user?.imageUrl ? <img src={user.imageUrl} alt={displayName} className="h-8 w-8 rounded-full border border-[hsl(var(--border))]" /> : <div className="grid h-8 w-8 place-items-center rounded-full bg-[#d98459] text-xs font-semibold text-white">{initials}</div>}<span className="hidden text-sm font-semibold sm:block">{displayName}</span></div><button onClick={() => signOut({ redirectUrl: basePath || '/' })} data-testid="button-sign-out" title="Sign out" className="ml-1 flex items-center gap-1.5 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]/80 px-2.5 py-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] transition hover:border-[hsl(var(--destructive))]/40 hover:bg-[hsl(var(--destructive))]/10 hover:text-[hsl(var(--destructive))]"><LogOut size={14} /><span className="hidden sm:inline">Sign out</span></button></div></header><main className="mx-auto max-w-[1440px] px-5 py-8 lg:px-9 lg:py-10">{children}</main></div></div>;
 }
 function getTimeGreeting(): string {
   const hour = new Date().getHours();
@@ -906,7 +906,7 @@ function CandidateHome() {
         } catch {}
       }
 
-      p.notify('Synced capability signals with SAP Talent Intelligence Hub.');
+      p.notify('Synced capability signals with Skills Intelligence Platform.');
     } catch {
       p.notify('Connected to local verified profile.');
     } finally {
@@ -945,7 +945,7 @@ function CandidateHome() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-[hsl(var(--accent))]">Personalized Capability Map</p>
             <h2 className="text-base font-semibold">Build or calibrate your talent profile across 3 pathways</h2>
-            <p className="text-xs text-[hsl(var(--muted-foreground))]">Targeting {profile.targetRole || 'Product Operations'} at {profile.targetCompany || 'SAP Labs'}. Choose from Resume Upload, Joule AI, or Form.</p>
+            <p className="text-xs text-[hsl(var(--muted-foreground))]">Targeting {profile.targetRole || 'Product Operations'} at {profile.targetCompany || 'enterprise companies'}. Choose from Resume Upload, AI Coach, or Form.</p>
           </div>
         </div>
         <Link href="/candidate/onboarding" data-testid="link-banner-onboarding" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--accent))] px-4 text-xs font-bold text-black shadow transition hover:brightness-110">
@@ -956,7 +956,7 @@ function CandidateHome() {
 
     <PageTitle 
       title={`${greeting}, ${firstName}.`} 
-      description="Your verified capabilities, real-world projects, and match signals are synced live with SAP HANA Cloud." 
+      description="Your verified capabilities, real-world projects, and match signals are synced live with Cloud Database." 
       action={
         <Link href="/candidate/jobs" data-testid="link-explore-from-home" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-xs font-semibold text-[hsl(var(--primary-foreground))]">
           Explore roles <ArrowRight size={14} className="ml-1.5" />
@@ -970,12 +970,12 @@ function CandidateHome() {
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <div className="flex items-center gap-2">
-              <p className="eyebrow text-[hsl(var(--accent))]">SAP Inclusive Match</p>
+              <p className="eyebrow text-[hsl(var(--accent))]">AI Skills Match</p>
               <Badge tone={hasData ? 'good' : 'quiet'}>{hasData ? `${realMetrics.profileSignal}% Capability Verified` : 'Awaiting Setup'}</Badge>
             </div>
             <h2 className="mt-3 font-display text-3xl">{profile.targetRole || currentMatch?.jobTitle || 'Discover Your Best Fit Role'}</h2>
             <p className="mt-2 text-sm text-[hsl(var(--sidebar-foreground))]/60">
-              {profile.targetCompany || currentMatch?.company || 'SAP Labs & Enterprise Partners'} · {profile.workMode || 'Hybrid'} {profile.location ? `· ${profile.location}` : ''}
+              {profile.targetCompany || currentMatch?.company || 'Top Employers'} · {profile.workMode || 'Hybrid'} {profile.location ? `· ${profile.location}` : ''}
             </p>
             {currentMatch?.matchSummary ? (
               <p className="mt-3 max-w-xl text-xs leading-relaxed text-[hsl(var(--sidebar-foreground))]/80">
@@ -987,7 +987,7 @@ function CandidateHome() {
               </p>
             ) : (
               <p className="mt-3 max-w-xl text-xs leading-relaxed text-[hsl(var(--sidebar-foreground))]/60">
-                Upload your resume or chat with Joule to extract your core technical skills, verified achievements, and matching roles.
+                Upload your resume or chat with your AI Coach to extract your core technical skills, verified achievements, and matching roles.
               </p>
             )}
 
@@ -1083,7 +1083,7 @@ function CandidateHome() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow text-[hsl(var(--primary))]">Demonstrated & Verified Competencies</p>
-          <h3 className="mt-1 font-display text-2xl">Skills Stored in SAP Talent Hub ({skills.length})</h3>
+          <h3 className="mt-1 font-display text-2xl">Skills Stored in Skills Hub ({skills.length})</h3>
         </div>
         <Link href="/candidate/skill-passport" className="text-xs font-semibold text-[hsl(var(--primary))] hover:underline">
           Explore Skill Galaxy <ArrowRight size={12} className="inline ml-1" />
@@ -1106,7 +1106,7 @@ function CandidateHome() {
         <div className="mt-5 rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
           <Network size={20} className="mx-auto text-[hsl(var(--muted-foreground))]/60 mb-2" />
           <p className="font-semibold text-sm text-[hsl(var(--foreground))]">No verified skills mapped yet</p>
-          <p className="mt-1">Upload your resume or launch the onboarding co-pilot to map your skills into SAP Talent Hub.</p>
+          <p className="mt-1">Upload your resume or launch the onboarding assistant to map your skills into Skills Hub.</p>
         </div>
       )}
     </div>
@@ -1257,12 +1257,12 @@ function CandidateHome() {
       </section>
 
       <section className="rounded-2xl bg-[#f8e6cf] p-6">
-        <p className="eyebrow text-[#925d26]">SAP Joule Co-Pilot</p>
+        <p className="eyebrow text-[#925d26]">AI Career Coach</p>
         <p className="mt-4 font-display text-2xl leading-tight">
           “Your {profile.targetRole || 'target role'} capability is grounded in verified evidence.”
         </p>
         <Link href="/candidate/assistant" data-testid="link-open-assistant" className="mt-5 inline-flex items-center text-sm font-semibold text-[#925d26]">
-          Talk with Joule <MessageCircle size={15} className="ml-2" />
+          Talk with Coach <MessageCircle size={15} className="ml-2" />
         </Link>
       </section>
     </div>
@@ -1291,7 +1291,7 @@ function SkillPassport() {
         <EmptyState
           icon={Network}
           title="No verified skills mapped yet"
-          body="Upload your resume or launch the onboarding co-pilot to map and verify your capabilities in the SAP Talent Hub."
+          body="Upload your resume or launch the onboarding assistant to map and verify your capabilities in the Skills Hub."
           action={
             <Link href="/candidate/onboarding" className="inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">
               Launch Onboarding <ArrowRight size={15} className="ml-2" />
@@ -1668,7 +1668,7 @@ function ResumeSyncModal({
                   </div>
                   <div className="rounded bg-[hsl(var(--muted))] p-2">
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Target Role & Company:</span>
-                    <p className="font-semibold">{extractedData.targetRole || 'Software Engineer'} @ {extractedData.targetCompany || 'SAP Labs India'}</p>
+                    <p className="font-semibold">{extractedData.targetRole || 'Software Engineer'} @ {extractedData.targetCompany || 'your target company'}</p>
                   </div>
                   <div className="rounded bg-[hsl(var(--muted))] p-2">
                     <span className="text-[10px] text-[hsl(var(--muted-foreground))]">Contact Info:</span>
@@ -1978,7 +1978,7 @@ function ResumeSyncModal({
                   Cancel
                 </Button>
                 <Button size="sm" onClick={handleConfirmMerge} disabled={loading}>
-                  {loading ? 'Saving to SAP Talent Hub...' : 'Save & Apply to Profile'} <Check size={14} className="ml-1" />
+                  {loading ? 'Saving to Skills Hub...' : 'Save & Apply to Profile'} <Check size={14} className="ml-1" />
                 </Button>
               </div>
             </div>
@@ -2054,7 +2054,7 @@ function CandidateProfile() {
         p.notify(data?.error || 'Unable to update fit score at this time.');
       }
     } catch {
-      p.notify('Failed to reach SAP Inclusive Matching Agent.');
+      p.notify('Failed to reach AI Skills Matching Agent.');
     } finally {
       setRecalculatingFit(false);
     }
@@ -2072,7 +2072,7 @@ function CandidateProfile() {
     await p.updateProfile(updated);
     setSaved(true);
     setEditing(false);
-    p.notify('Comprehensive profile saved to SAP Talent Intelligence Hub.');
+    p.notify('Comprehensive profile saved to Skills Intelligence Platform.');
   };
 
   return (
@@ -2095,7 +2095,7 @@ function CandidateProfile() {
         }}
       />
       <PageTitle
-        eyebrow="My profile · SAP Talent Intelligence Hub"
+        eyebrow="My profile · Skills Intelligence Platform"
         title="Comprehensive Capability Profile"
         description="Every project, skill, and achievement is verified without timeline penalties. Keep your career story human and accurate."
         action={
@@ -2127,7 +2127,7 @@ function CandidateProfile() {
         }
       />
 
-      {/* Dedicated SAP Inclusive Matching Agent Fit Banner */}
+      {/* Dedicated AI Skills Matching Agent Fit Banner */}
       <section className="mb-6 surface rounded-2xl border-2 border-[hsl(var(--primary))]/20 bg-gradient-to-r from-[hsl(var(--primary))]/10 via-[hsl(var(--card))] to-transparent p-5 sm:p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
@@ -2136,7 +2136,7 @@ function CandidateProfile() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <p className="eyebrow text-[hsl(var(--primary))]">SAP Inclusive Matching Agent</p>
+                <p className="eyebrow text-[hsl(var(--primary))]">AI Skills Matching Agent</p>
                 <Badge tone="good"><CheckCircle2 size={12} className="mr-1" /> Locked & Persisted</Badge>
                 {Number(form.careerBreakYears) > 0 ? (
                   <Badge tone="quiet">0% Break Penalty</Badge>
@@ -2148,7 +2148,7 @@ function CandidateProfile() {
                 Capability Fit Score: <span className="text-[hsl(var(--primary))]">{p.fit || p.latestMatch?.overallFitScore || form.fit || 84}%</span>
               </h3>
               <p className="mt-1 text-xs text-[hsl(var(--muted-foreground))]">
-                Stored in SAP HANA Cloud. Score is preserved across page reloads and only updates when you explicitly calibrate with new skills or projects.
+                Stored in Cloud Database. Score is preserved across page reloads and only updates when you explicitly calibrate with new skills or projects.
               </p>
             </div>
           </div>
@@ -2255,7 +2255,7 @@ function CandidateProfile() {
                     className="mt-1 w-full rounded border border-[hsl(var(--input))] bg-transparent p-1.5 text-xs"
                   />
                 ) : (
-                  <p className="mt-1 text-sm font-semibold">{form.targetCompany || 'Flexible / SAP Labs'}</p>
+                  <p className="mt-1 text-sm font-semibold">{form.targetCompany || 'Flexible / enterprise companies'}</p>
                 )}
               </div>
               <div>
@@ -2328,7 +2328,7 @@ function CandidateProfile() {
               <div className="mt-4 rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
                 <GraduationCap size={20} className="mx-auto text-[hsl(var(--muted-foreground))]/60 mb-2" />
                 <p className="font-semibold text-sm text-[hsl(var(--foreground))]">No academic history listed yet</p>
-                <p className="mt-1">Upload your resume or chat with Joule to discover your degrees and coursework.</p>
+                <p className="mt-1">Upload your resume or chat with your AI Coach to discover your degrees and coursework.</p>
               </div>
             )}
           </section>
@@ -2370,7 +2370,7 @@ function CandidateProfile() {
               <div className="mt-4 rounded-xl border border-dashed border-[hsl(var(--border))] p-6 text-center text-xs text-[hsl(var(--muted-foreground))]">
                 <Code size={20} className="mx-auto text-[hsl(var(--muted-foreground))]/60 mb-2" />
                 <p className="font-semibold text-sm text-[hsl(var(--foreground))]">No technical projects listed yet</p>
-                <p className="mt-1">Projects provide the strongest evidence for recruiters in the SAP Talent Intelligence Hub.</p>
+                <p className="mt-1">Projects provide the strongest evidence for recruiters in the Skills Intelligence Platform.</p>
               </div>
             )}
           </section>
@@ -2379,7 +2379,7 @@ function CandidateProfile() {
           <section className="surface rounded-2xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="eyebrow">SAP Talent Intelligence Hub</p>
+                <p className="eyebrow">Skills Intelligence Platform</p>
                 <h2 className="mt-1 font-display text-xl">Demonstrated Capabilities</h2>
               </div>
               <Badge tone="good"><CheckCircle2 size={12} className="mr-1" /> 91% Verified</Badge>
@@ -2473,11 +2473,11 @@ function CandidateOnboarding() {
   const [pasteInput, setPasteInput] = useState('');
   const [onboardError, setOnboardError] = useState<string | null>(null);
 
-  // Joule Chat Onboarding State
+  // AI Coach Onboarding State
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'assistant' | 'user'; content: string }>>([
     {
       role: 'assistant',
-      content: `Hi ${user?.firstName || 'there'}! I'm Joule, your career intelligence co-pilot. Let's build your verified capability profile together.\n\nTo get started, what's your full name and current city/location?`
+      content: `Hi ${user?.firstName || 'there'}! I'm SensAI, your AI career coach. Let's build your verified capability profile together.\n\nTo get started, what's your full name and current city/location?`
     }
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -2572,7 +2572,7 @@ function CandidateOnboarding() {
           location: d.location || 'India',
           summary: d.summary || '',
           targetRole: d.targetRole || 'Software Engineer',
-          targetCompany: d.targetCompany || 'SAP Labs India',
+          targetCompany: d.targetCompany || 'your target company',
           workMode: d.workMode || 'Hybrid',
           careerBreakYears: 0,
           breakContext: '',
@@ -2613,7 +2613,7 @@ function CandidateOnboarding() {
     handleResumeParse(pasteInput);
   }
 
-  // Handle Joule Onboarding Chat
+  // Handle AI Coach Onboarding Chat
   async function sendChatMessage(preset?: string) {
     const userMsg = (preset || chatInput).trim();
     if (!userMsg || loading) return;
@@ -2634,7 +2634,7 @@ function CandidateOnboarding() {
       const data = await res.json().catch(() => null);
 
       if (!res.ok || (data && data.success === false)) {
-        const errMsg = data?.error || `Joule agent error (${res.status})`;
+        const errMsg = data?.error || `AI agent error (${res.status})`;
         setChatMessages(m => [...m, { role: 'assistant', content: `⚠️ Error: ${errMsg}` }]);
         return;
       }
@@ -2663,7 +2663,7 @@ function CandidateOnboarding() {
   async function finishOnboarding() {
     setLoading(true);
     setSetupProgress(15);
-    setSetupStatus('Calibrating verified capabilities with SAP Talent Intelligence Hub...');
+    setSetupStatus('Calibrating verified capabilities with Skills Intelligence Platform...');
 
     const timer1 = window.setTimeout(() => {
       setSetupProgress(40);
@@ -2674,7 +2674,7 @@ function CandidateOnboarding() {
 
     const timer2 = window.setTimeout(() => {
       setSetupProgress(70);
-      setSetupStatus('Personalizing your 3-week SAP Learning Hub pathway...');
+      setSetupStatus('Personalizing your 3-week learning pathway...');
     }, 900);
 
     try {
@@ -2695,7 +2695,7 @@ function CandidateOnboarding() {
       window.clearTimeout(timer1);
       window.clearTimeout(timer2);
       setSetupProgress(90);
-      setSetupStatus('Persisting candidate capability signals to SAP HANA Cloud...');
+      setSetupStatus('Persisting candidate capability signals to Cloud Database...');
 
       if (data?.match) {
         p.setLatestMatch(data.match);
@@ -2738,10 +2738,10 @@ function CandidateOnboarding() {
             <div className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[hsl(var(--primary))]/15 text-[hsl(var(--primary))] animate-pulse">
               <Radar size={32} />
             </div>
-            <p className="eyebrow mt-5 text-[hsl(var(--primary))]">SAP Talent Intelligence Hub</p>
+            <p className="eyebrow mt-5 text-[hsl(var(--primary))]">Skills Intelligence Platform</p>
             <h1 className="mt-2 font-display text-3xl font-semibold">Setting up your dashboard...</h1>
             <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-              The SAP Inclusive Matching Agent is calibrating your capability signals and personalizing your 3-week skill bridge.
+              The AI Skills Matching Agent is calibrating your capability signals and personalizing your 3-week skill bridge.
             </p>
 
             <div className="mt-8">
@@ -2772,13 +2772,13 @@ function CandidateOnboarding() {
                 <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 70 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
                   <CheckCircle2 size={12} />
                 </div>
-                <span>Personalized 3-week SAP Learning Hub pathway curated</span>
+                <span>Personalized 3-week learning pathway curated</span>
               </div>
               <div className="flex items-center gap-3 text-xs font-medium">
                 <div className={`grid h-5 w-5 place-items-center rounded-full ${setupProgress >= 95 ? 'bg-emerald-500 text-white' : 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]'}`}>
                   <CheckCircle2 size={12} />
                 </div>
-                <span>Candidate dashboard persisted in SAP HANA Cloud</span>
+                <span>Candidate dashboard persisted in Cloud Database</span>
               </div>
             </div>
           </div>
@@ -2813,7 +2813,7 @@ function CandidateOnboarding() {
                 </div>
               </button>
 
-              {/* Option 2: Joule AI Chat */}
+              {/* Option 2: AI Coach Chat */}
               <button
                 onClick={() => setMode('chat')}
                 className="surface group flex flex-col justify-between rounded-2xl p-6 text-left transition hover:-translate-y-1 hover:border-[hsl(var(--accent))] hover:shadow-[var(--shadow-md)]"
@@ -2822,9 +2822,9 @@ function CandidateOnboarding() {
                   <div className="grid h-12 w-12 place-items-center rounded-xl bg-[hsl(var(--accent))]/20 text-[hsl(var(--accent))] group-hover:bg-[hsl(var(--accent))] group-hover:text-black transition">
                     <Sparkles size={22} />
                   </div>
-                  <h2 className="mt-5 font-display text-xl font-semibold">Chat with Joule</h2>
+                  <h2 className="mt-5 font-display text-xl font-semibold">Chat with AI Coach</h2>
                   <p className="mt-2 text-xs leading-5 text-[hsl(var(--muted-foreground))]">
-                    No resume needed. Tell Joule about your work, skills, and goals in a guided conversation.
+                    No resume needed. Tell the AI Coach about your work, skills, and goals in a guided conversation.
                   </p>
                 </div>
                 <div className="mt-6 flex items-center gap-1 text-xs font-semibold text-[hsl(var(--accent))]">
@@ -2861,14 +2861,14 @@ function CandidateOnboarding() {
               <button onClick={() => setMode('select')} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
                 <ArrowLeft size={14} /> Back to options
               </button>
-              <Badge tone="good"><Sparkles size={11} className="mr-1" /> SAP Skills Discovery Agent</Badge>
+              <Badge tone="good"><Sparkles size={11} className="mr-1" /> Skills Discovery Agent</Badge>
             </div>
 
             {uploadStage === 'idle' && (
               <section className="surface rounded-2xl p-6 sm:p-8">
                 <h1 className="font-display text-3xl">Upload your resume</h1>
                 <p className="mt-2 text-sm text-[hsl(var(--muted-foreground))]">
-                  We parse your demonstrated outcomes and verify skills into the SAP Talent Intelligence Hub ontology.
+                  We parse your demonstrated outcomes and verify skills into the Skills Intelligence Platform ontology.
                 </p>
 
                 {onboardError && (
@@ -3110,7 +3110,7 @@ function CandidateOnboarding() {
                         setProfile(prev => ({ ...prev, targetCompany: val }));
                         if (extractedProfile) setExtractedProfile(prev => prev ? ({ ...prev, targetCompany: val }) : null);
                       }}
-                      placeholder="e.g. SAP Labs India, Google, Microsoft, Amazon..."
+                      placeholder="e.g. your target company, Google, Microsoft, Amazon..."
                       className="h-11 rounded-lg border border-[hsl(var(--input))] bg-transparent px-3 text-sm font-normal"
                     />
                   </label>
@@ -3154,14 +3154,14 @@ function CandidateOnboarding() {
           </div>
         )}
 
-        {/* Pathway 2: Conversational Joule AI Onboarding */}
+        {/* Pathway 2: Conversational AI Coach Onboarding */}
         {mode === 'chat' && (
           <div>
             <div className="mb-6 flex items-center justify-between">
               <button onClick={() => setMode('select')} className="inline-flex items-center gap-1.5 text-xs font-semibold text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
                 <ArrowLeft size={14} /> Back to options
               </button>
-              <Badge tone="good"><Sparkles size={11} className="mr-1" /> SAP Joule Co-Pilot</Badge>
+              <Badge tone="good"><Sparkles size={11} className="mr-1" /> AI Career Coach</Badge>
             </div>
 
             <section className="surface overflow-hidden rounded-2xl">
@@ -3170,8 +3170,8 @@ function CandidateOnboarding() {
                   <Sparkles size={18} />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-sm">Joule Career Onboarding</h2>
-                  <p className="text-xs text-[hsl(var(--muted-foreground))]">Grounded in SAP Talent Intelligence Hub</p>
+                  <h2 className="font-semibold text-sm">AI Coach Onboarding</h2>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))]">Grounded in Skills Intelligence Platform</p>
                 </div>
               </div>
 
@@ -3187,7 +3187,7 @@ function CandidateOnboarding() {
                   <div className="flex justify-start">
                     <div className="rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-2.5 text-xs text-[hsl(var(--muted-foreground))] flex items-center gap-2">
                       <RefreshCcw size={13} className="animate-spin text-[hsl(var(--primary))]" />
-                      Joule is thinking…
+                      AI Coach is thinking…
                     </div>
                   </div>
                 )}
@@ -3198,7 +3198,7 @@ function CandidateOnboarding() {
                 <div className="border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] px-5 py-3 text-xs">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-semibold text-[hsl(var(--primary))] flex items-center gap-1.5">
-                      <ShieldCheck size={14} /> Auto-Saved to SAP Talent Intelligence Hub
+                      <ShieldCheck size={14} /> Auto-Saved to Skills Intelligence Platform
                     </span>
                     <Badge tone="good"><CheckCircle2 size={11} className="mr-1" /> Verified</Badge>
                   </div>
@@ -3219,7 +3219,7 @@ function CandidateOnboarding() {
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     `${user?.fullName || user?.firstName || 'Aman Sharma'} · Bangalore`,
-                    'Full Stack Developer targeting SAP Labs',
+                    'Full Stack Developer targeting enterprise companies',
                     'React, TypeScript, Node.js, and SQL',
                     'B.Tech in Computer Science · 2024 Graduate',
                     'Cloud and Enterprise application engineering'
@@ -3243,7 +3243,7 @@ function CandidateOnboarding() {
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
-                    placeholder="Type your response to Joule…"
+                    placeholder="Type your response…"
                     className="h-11 flex-1 rounded-lg border border-[hsl(var(--input))] bg-[hsl(var(--card))] px-3 text-sm"
                     disabled={loading}
                   />
@@ -3396,26 +3396,26 @@ function SkillGap() {
   const p = useProduct();
   const match = p.latestMatch;
   const targetRole = p.profile.targetRole || match?.jobTitle || "Product Operations Lead";
-  const targetCompany = p.profile.targetCompany || match?.company || "SAP Labs";
+  const targetCompany = p.profile.targetCompany || match?.company || "enterprise";
   const currentFit = p.fit || match?.overallFitScore || 84;
   const projectedFit = match?.threeWeekBoostProjected || 91;
 
   const defaultModules = [
-    { week: 1, title: 'SQL & Relational Data Modeling for Enterprise Decision Makers', competencyGained: 'SQL Analytics & Data Insights', hoursRequired: 5, courseUrl: 'https://learning.sap.com/learning-journeys/explore-sap-hana-cloud-database' },
-    { week: 2, title: 'Cross-Functional Operating Models & Stakeholder Alignment', competencyGained: 'Cross-Functional Leadership', hoursRequired: 4, courseUrl: 'https://learning.sap.com/learning-journeys/discover-sap-activate-methodology' },
-    { week: 3, title: 'Enterprise Product Strategy & Agile Execution (SAP Activate)', competencyGained: 'Agile Governance', hoursRequired: 5, courseUrl: 'https://learning.sap.com' }
+    { week: 1, title: 'SQL & Relational Data Modeling for Enterprise Decision Makers', competencyGained: 'SQL Analytics & Data Insights', hoursRequired: 5, courseUrl: 'https://www.coursera.org/learn/sql-for-data-science' },
+    { week: 2, title: 'Cross-Functional Operating Models & Stakeholder Alignment', competencyGained: 'Cross-Functional Leadership', hoursRequired: 4, courseUrl: 'https://www.coursera.org/learn/agile-development' },
+    { week: 3, title: 'Enterprise Product Strategy & Agile Execution (Agile Framework)', competencyGained: 'Agile Governance', hoursRequired: 5, courseUrl: 'https://www.coursera.org' }
   ];
 
-  const modulesToDisplay = (Array.isArray(match?.sapLearningHubModules) && match.sapLearningHubModules.length > 0)
-    ? match.sapLearningHubModules
+  const modulesToDisplay = (Array.isArray(match?.learningModules) && match.learningModules.length > 0)
+    ? match.learningModules
     : defaultModules;
 
-  return <WorkspaceShell role="candidate"><PageTitle eyebrow="SAP Skill Bridge" title="A personalized bridge to your target role." description={`Curated by the SAP Inclusive Matching Agent for ${targetRole} at ${targetCompany}. Zero penalty for your career break — purely focused on capability acceleration.`} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6 sm:p-8"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Target role · {targetCompany}</p><h2 className="mt-2 font-display text-3xl">{currentFit}% <span className="font-sans text-base text-[hsl(var(--muted-foreground))]">today</span> → <span className="text-[hsl(var(--primary))]">{projectedFit}%</span></h2></div><Badge tone="good"><TrendingUp size={13} className="mr-1" /> High leverage</Badge></div><div className="mt-8 space-y-5">{modulesToDisplay.map((m: any, idx: number) => {
+  return <WorkspaceShell role="candidate"><PageTitle eyebrow="Skill Bridge" title="A personalized bridge to your target role." description={`Curated by the AI Skills Matching Agent for ${targetRole} at ${targetCompany}. Zero penalty for your career break — purely focused on capability acceleration.`} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6 sm:p-8"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow">Target role · {targetCompany}</p><h2 className="mt-2 font-display text-3xl">{currentFit}% <span className="font-sans text-base text-[hsl(var(--muted-foreground))]">today</span> → <span className="text-[hsl(var(--primary))]">{projectedFit}%</span></h2></div><Badge tone="good"><TrendingUp size={13} className="mr-1" /> High leverage</Badge></div><div className="mt-8 space-y-5">{modulesToDisplay.map((m: any, idx: number) => {
     const isWeek1 = idx === 0;
     const isComplete = isWeek1 && p.completedLearning;
     const bgStyles = ['bg-[#f8e6cf] text-[#925d26]', 'bg-[#e1f0ea] text-[hsl(var(--primary))]', 'bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]'];
 
-    return <div key={idx} className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ${bgStyles[idx % 3]}`}>0{m.week || idx + 1}</span><h3 className="font-semibold">{m.title}</h3></div><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Competency: <span className="font-medium text-[hsl(var(--foreground))]">{m.competencyGained}</span> · {m.hoursRequired || 5}h on SAP Learning Hub.</p></div><Badge tone={isComplete ? 'good' : (isWeek1 ? 'warm' : 'quiet')}>{isComplete ? 'Complete' : (isWeek1 ? `+${projectedFit - currentFit} fit` : `Week ${m.week || idx + 1}`)}</Badge></div>{isWeek1 && !p.completedLearning && <div className="mt-4 flex flex-wrap items-center gap-3"><Button onClick={() => { p.setCompletedLearning(true); p.setFit(projectedFit); p.notify(`Skill bridge complete — your fit moved to ${projectedFit}%.`); }} data-testid="button-complete-skill-bridge"><CheckCircle2 size={15} /> Mark module complete</Button><a href={m.courseUrl || 'https://learning.sap.com'} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-[hsl(var(--border))] px-3 text-xs font-semibold hover:bg-[hsl(var(--muted))]">Open on SAP Learning Hub ↗</a></div>}</div>;
+    return <div key={idx} className="rounded-xl border border-[hsl(var(--border))] p-5"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><span className={`grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ${bgStyles[idx % 3]}`}>0{m.week || idx + 1}</span><h3 className="font-semibold">{m.title}</h3></div><p className="mt-2 text-sm leading-6 text-[hsl(var(--muted-foreground))]">Competency: <span className="font-medium text-[hsl(var(--foreground))]">{m.competencyGained}</span> · {m.hoursRequired || 5}h of learning.</p></div><Badge tone={isComplete ? 'good' : (isWeek1 ? 'warm' : 'quiet')}>{isComplete ? 'Complete' : (isWeek1 ? `+${projectedFit - currentFit} fit` : `Week ${m.week || idx + 1}`)}</Badge></div>{isWeek1 && !p.completedLearning && <div className="mt-4 flex flex-wrap items-center gap-3"><Button onClick={() => { p.setCompletedLearning(true); p.setFit(projectedFit); p.notify(`Skill bridge complete — your fit moved to ${projectedFit}%.`); }} data-testid="button-complete-skill-bridge"><CheckCircle2 size={15} /> Mark module complete</Button><a href={m.courseUrl || 'https://www.coursera.org'} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center rounded-lg border border-[hsl(var(--border))] px-3 text-xs font-semibold hover:bg-[hsl(var(--muted))]">Open Course ↗</a></div>}</div>;
   })}</div></section><aside className="space-y-5"><div className="surface rounded-2xl p-6"><p className="eyebrow">Path progress</p><div className="mt-4 flex items-end justify-between"><span className="font-data text-3xl">{p.completedLearning ? '33' : '0'}%</span><span className="text-sm text-[hsl(var(--muted-foreground))]">1 of 3 weeks</span></div><Progress value={p.completedLearning ? 33 : 0} color="bg-[hsl(var(--accent))]" /><div className="mt-5 grid gap-3 text-sm"><div className="flex items-center gap-2"><CheckCircle2 size={15} className={p.completedLearning ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--muted-foreground))]'} /> Evidence reviewed</div><div className="flex items-center gap-2"><Clock3 size={15} /> {modulesToDisplay[0]?.hoursRequired || 5}h this week</div><div className="flex items-center gap-2"><Target size={15} /> Role-specific outcome</div></div></div><div className="rounded-2xl bg-[hsl(var(--sidebar))] p-6 text-[hsl(var(--sidebar-foreground))]"><Sparkles size={19} className="text-[hsl(var(--accent))]" /><p className="mt-4 font-display text-2xl">The goal is not to catch up.</p><p className="mt-2 text-sm leading-6 text-[hsl(var(--sidebar-foreground))]/60">It is to make the capability you already have easier to see.</p></div></aside></div></WorkspaceShell>;
 }
 function Learning() {
@@ -4053,7 +4053,7 @@ function Resume() {
   );
 }
 
-function JouleMarkdownMessage({ content }: { content: string }) {
+function AICoachMarkdownMessage({ content }: { content: string }) {
 
   const blocks = content.split('\n\n');
 
@@ -4205,7 +4205,7 @@ function Assistant() {
   const initialGreeting = useMemo(() => {
     return `### 👋 Welcome, **${candidateName}**!
 
-I am **SAP Joule**, your AI Career Co-Pilot grounded in the **SAP Talent Intelligence Hub**.
+I am **SensAI Career Coach**, your AI-powered career co-pilot.
 
 ### 📊 Your Active Profile Intelligence
 - **Target Role**: **${targetRole}** ${targetCompany !== 'Target Employer' ? `at **${targetCompany}**` : ''}
@@ -4313,13 +4313,13 @@ How can I support your career journey today? You can ask me for interview coachi
   return (
     <WorkspaceShell role="candidate">
       <PageTitle
-        eyebrow="SAP Joule Career Assistant"
+        eyebrow="SensAI Career Coach"
         title="Your Personalized Career Co-Pilot"
-        description="Grounded in your real verified capabilities, learning goals, and SAP Talent Intelligence Hub profile."
+        description="Grounded in your real verified capabilities, learning goals, and Skills Intelligence Platform profile."
         action={
           <Button
             onClick={handleReset}
-            data-testid="button-reset-joule-chat"
+            data-testid="button-reset-coach-chat"
             variant="outline"
             size="sm"
             className="text-xs"
@@ -4371,11 +4371,11 @@ How can I support your career journey today? You can ask me for interview coachi
               </div>
               <div>
                 <p className="text-sm font-bold flex items-center gap-1.5">
-                  SAP Joule AI Co-Pilot
+                  AI Career Coach
                   <span className="rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-2 py-0.5">Live Agent</span>
                 </p>
                 <p className="text-xs text-[hsl(var(--muted-foreground))]">
-                  Personalized to {candidateName} · SAP Talent Intelligence Hub
+                  Personalized to {candidateName} · Skills Intelligence Platform
                 </p>
               </div>
             </div>
@@ -4402,7 +4402,7 @@ How can I support your career journey today? You can ask me for interview coachi
                   }`}
                 >
                   {m.role === 'assistant' ? (
-                    <JouleMarkdownMessage content={m.content} />
+                    <AICoachMarkdownMessage content={m.content} />
                   ) : (
                     <p className="whitespace-pre-wrap">{m.content}</p>
                   )}
@@ -4422,7 +4422,7 @@ How can I support your career journey today? You can ask me for interview coachi
                 </div>
                 <div className="rounded-2xl rounded-tl-xs border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-4 py-3 text-sm text-[hsl(var(--muted-foreground))] flex items-center gap-2 shadow-xs">
                   <span className="h-2 w-2 rounded-full bg-[hsl(var(--primary))] animate-ping" />
-                  Joule is formulating your personalized guidance...
+                  AI Coach is formulating your personalized guidance...
                 </div>
               </div>
             )}
@@ -4454,7 +4454,7 @@ How can I support your career journey today? You can ask me for interview coachi
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && send()}
                 data-testid="input-assistant-message"
-                placeholder={`Ask Joule anything about your journey to ${targetRole}...`}
+                placeholder={`Ask anything about your journey to ${targetRole}...`}
                 className="h-12 flex-1 rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]/30"
                 disabled={loading}
               />
@@ -4492,7 +4492,7 @@ function CreateJob() {
 }
 function RecruiterJobDetail() {
   const { id } = useParams<{ id: string }>(); const job = jobs.find(j => j.id === Number(id)) || jobs[0];
-  return <WorkspaceShell role="recruiter"><Link href="/recruiter/jobs" data-testid="link-recruiter-back-jobs" className="mb-7 inline-flex items-center gap-2 text-sm font-semibold text-[hsl(var(--primary))]"><ArrowLeft size={15} /> Jobs</Link><PageTitle eyebrow="Role intelligence" title={job.title} description={`${job.company} · ${job.location} · ${job.mode}`} action={<Button onClick={() => window.alert('Role editor opened in this prototype.')} data-testid="button-edit-role" variant="outline"><Pencil size={15} /> Edit role</Button>} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6"><div className="flex items-center justify-between"><div><p className="eyebrow">Pipeline</p><h2 className="mt-2 font-display text-3xl">34 candidates → 12 signals</h2></div><Badge tone="good">Active</Badge></div><div className="mt-8 grid gap-3 sm:grid-cols-3">{[['New', '22'], ['Review', '8'], ['Shortlist', '4']].map(([label, n], i) => <div key={label} className="rounded-xl bg-[hsl(var(--muted))] p-4"><p className="text-xs text-[hsl(var(--muted-foreground))]">{label}</p><p className="mt-2 font-data text-2xl">{n}</p><div className="mt-3 h-1 rounded-full bg-[hsl(var(--secondary))]"><div className="h-full rounded-full bg-[hsl(var(--primary))]" style={{ width: `${[65, 40, 25][i]}%` }} /></div></div>)}</div><Link href="/recruiter/candidates" data-testid="link-review-role-candidates" className="mt-7 inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Review candidates <ArrowRight size={15} className="ml-2" /></Link></section><aside className="surface rounded-2xl p-6"><p className="eyebrow">Signal guardrails</p><div className="mt-5 grid gap-4 text-sm"><div className="flex justify-between gap-3"><span>Scoring basis</span><span className="font-semibold text-[hsl(var(--primary))]">100% Skills-First</span></div><div className="flex justify-between gap-3"><span>Human review required</span><span className="font-semibold text-[hsl(var(--primary))]">Yes</span></div><div className="flex justify-between gap-3"><span>Fairness monitor</span><Badge tone="warm">1 watch</Badge></div></div><div className="mt-6 rounded-xl bg-[#e1f0ea] p-4 text-xs leading-5 text-[#23614e]">Recommendations are based on evidence and verified skills in SAP Talent Intelligence Hub.</div></aside></div></WorkspaceShell>;
+  return <WorkspaceShell role="recruiter"><Link href="/recruiter/jobs" data-testid="link-recruiter-back-jobs" className="mb-7 inline-flex items-center gap-2 text-sm font-semibold text-[hsl(var(--primary))]"><ArrowLeft size={15} /> Jobs</Link><PageTitle eyebrow="Role intelligence" title={job.title} description={`${job.company} · ${job.location} · ${job.mode}`} action={<Button onClick={() => window.alert('Role editor opened in this prototype.')} data-testid="button-edit-role" variant="outline"><Pencil size={15} /> Edit role</Button>} /><div className="grid gap-5 lg:grid-cols-[1.2fr_.8fr]"><section className="surface rounded-2xl p-6"><div className="flex items-center justify-between"><div><p className="eyebrow">Pipeline</p><h2 className="mt-2 font-display text-3xl">34 candidates → 12 signals</h2></div><Badge tone="good">Active</Badge></div><div className="mt-8 grid gap-3 sm:grid-cols-3">{[['New', '22'], ['Review', '8'], ['Shortlist', '4']].map(([label, n], i) => <div key={label} className="rounded-xl bg-[hsl(var(--muted))] p-4"><p className="text-xs text-[hsl(var(--muted-foreground))]">{label}</p><p className="mt-2 font-data text-2xl">{n}</p><div className="mt-3 h-1 rounded-full bg-[hsl(var(--secondary))]"><div className="h-full rounded-full bg-[hsl(var(--primary))]" style={{ width: `${[65, 40, 25][i]}%` }} /></div></div>)}</div><Link href="/recruiter/candidates" data-testid="link-review-role-candidates" className="mt-7 inline-flex min-h-10 items-center rounded-lg bg-[hsl(var(--primary))] px-4 text-sm font-semibold text-[hsl(var(--primary-foreground))]">Review candidates <ArrowRight size={15} className="ml-2" /></Link></section><aside className="surface rounded-2xl p-6"><p className="eyebrow">Signal guardrails</p><div className="mt-5 grid gap-4 text-sm"><div className="flex justify-between gap-3"><span>Scoring basis</span><span className="font-semibold text-[hsl(var(--primary))]">100% Skills-First</span></div><div className="flex justify-between gap-3"><span>Human review required</span><span className="font-semibold text-[hsl(var(--primary))]">Yes</span></div><div className="flex justify-between gap-3"><span>Fairness monitor</span><Badge tone="warm">1 watch</Badge></div></div><div className="mt-6 rounded-xl bg-[#e1f0ea] p-4 text-xs leading-5 text-[#23614e]">Recommendations are based on evidence and verified skills in Skills Intelligence Platform.</div></aside></div></WorkspaceShell>;
 }
 
 function RecruiterCandidates() {
